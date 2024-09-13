@@ -112,7 +112,7 @@ async function setupTokenPair(
 
 
 async function main() {
-  const [owner] = await ethers.getSigners();
+  const [owner, user1, user2, user3] = await ethers.getSigners();
   console.log(`Deploying contracts with the account: ${owner.address}`);
 
   // Deploy core contracts

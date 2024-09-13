@@ -17,7 +17,7 @@ contract SmartBasket is Ownable {
     struct Basket {
         TokenAllocation[5] allocations;
         uint256 tokenCount;
-        uint256 totalValue;
+        uint256 investmentValue;
     }
 
     mapping(address => Basket[]) public userBaskets;
@@ -45,9 +45,10 @@ contract SmartBasket is Ownable {
         require(totalPercentage == 100, "Total percentage must be 100");
 
         newBasket.tokenCount = _allocations.length;
-        newBasket.totalValue = _usdtAmount;
+        newBasket.investmentValue = _usdtAmount;
 
-        usdtToken.transferFrom(msg.sender, address(this), _usdtAmount);
+        bool success = usdtToken.transferFrom(msg.sender, address(this), _usdtAmount);
+        require(success, "Failed to transfer USDT");
         _investInBasket(newBasket, _usdtAmount);
 
         emit BasketCreated(msg.sender, userBaskets[msg.sender].length - 1, _usdtAmount);
@@ -122,5 +123,54 @@ contract SmartBasket is Ownable {
 
     function getUserBaskets(address user) external view returns (Basket[] memory) {
         return userBaskets[user];
+    }
+
+    function getBasketTotalValue(address user, uint256 basketIndex) public view returns (uint256) {
+        require(basketIndex < userBaskets[user].length, "Invalid basket index");
+        Basket storage basket = userBaskets[user][basketIndex];
+        uint256 totalValue = 0;
+
+        for (uint i = 0; i < basket.tokenCount; i++) {
+            address tokenAddress = basket.allocations[i].tokenAddress;
+            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
+            if (tokenBalance > 0) {
+                totalValue += getEstimatedUsdtValue(tokenAddress, tokenBalance);
+            }
+        }
+
+        return totalValue;
+    }
+
+    function getBasketAssetDetails(address user, uint256 basketIndex) public view returns (address[] memory, uint256[] memory, uint256[] memory) {
+        require(basketIndex < userBaskets[user].length, "Invalid basket index");
+        Basket storage basket = userBaskets[user][basketIndex];
+
+        address[] memory tokenAddresses = new address[](basket.tokenCount);
+        uint256[] memory tokenAmounts = new uint256[](basket.tokenCount);
+        uint256[] memory tokenValues = new uint256[](basket.tokenCount);
+
+        for (uint i = 0; i < basket.tokenCount; i++) {
+            address tokenAddress = basket.allocations[i].tokenAddress;
+            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
+
+            tokenAddresses[i] = tokenAddress;
+            tokenAmounts[i] = tokenBalance;
+            tokenValues[i] = getEstimatedUsdtValue(tokenAddress, tokenBalance);
+        }
+
+        return (tokenAddresses, tokenAmounts, tokenValues);
+    }
+
+    function getEstimatedUsdtValue(address tokenAddress, uint256 tokenAmount) internal view returns (uint256) {
+        if (tokenAddress == address(usdtToken)) {
+            return tokenAmount;
+        }
+
+        address[] memory path = new address[](2);
+        path[0] = tokenAddress;
+        path[1] = address(usdtToken);
+
+        uint256[] memory amounts = uniswapRouter.getAmountsOut(tokenAmount, path);
+        return amounts[1];
     }
 }
