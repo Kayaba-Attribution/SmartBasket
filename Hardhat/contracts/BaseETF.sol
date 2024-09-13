@@ -2,64 +2,125 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-contract BaseETF is Ownable {
-    using SafeERC20 for IERC20;
-    using SafeMath for uint256;
+contract SmartBasket is Ownable {
+    IUniswapV2Router02 public uniswapRouter;
+    IERC20 public usdtToken;
 
     struct TokenAllocation {
         address tokenAddress;
         uint256 percentage;
     }
 
-    TokenAllocation[] public allocations;
-    uint256 public constant PERCENTAGE_SCALE = 10000; // 100.00%
+    struct Basket {
+        TokenAllocation[5] allocations;
+        uint256 tokenCount;
+        uint256 totalValue;
+    }
 
-    mapping(address => uint256) public userShares;
-    uint256 public totalShares;
+    mapping(address => Basket[]) public userBaskets;
 
-    event Deposit(address indexed user, uint256 amount);
-    event Withdraw(address indexed user, uint256 amount);
-    event Rebalance();
+    event BasketCreated(address indexed user, uint256 basketIndex, uint256 usdtAmount);
+    event BasketSold(address indexed user, uint256 basketIndex, uint256 usdtReturned);
 
-    constructor(TokenAllocation[] memory _allocations) {
+    constructor(address _uniswapRouter, address _usdtAddress) {
+        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
+        usdtToken = IERC20(_usdtAddress);
+    }
+
+    function createBasket(TokenAllocation[] memory _allocations, uint256 _usdtAmount) external {
+        require(_allocations.length > 0 && _allocations.length <= 5, "Invalid number of tokens");
+        require(_usdtAmount > 0, "Must send USDT");
+
         uint256 totalPercentage = 0;
+        Basket storage newBasket = userBaskets[msg.sender].push();
+
         for (uint i = 0; i < _allocations.length; i++) {
-            allocations.push(_allocations[i]);
-            totalPercentage = totalPercentage.add(_allocations[i].percentage);
+            newBasket.allocations[i] = _allocations[i];
+            totalPercentage += _allocations[i].percentage;
         }
-        require(totalPercentage == PERCENTAGE_SCALE, "Total percentage must be 100.00%");
+
+        require(totalPercentage == 100, "Total percentage must be 100");
+
+        newBasket.tokenCount = _allocations.length;
+        newBasket.totalValue = _usdtAmount;
+
+        usdtToken.transferFrom(msg.sender, address(this), _usdtAmount);
+        _investInBasket(newBasket, _usdtAmount);
+
+        emit BasketCreated(msg.sender, userBaskets[msg.sender].length - 1, _usdtAmount);
     }
 
-    function deposit(uint256 amount) external {
-        require(amount > 0, "Deposit amount must be greater than 0");
-        // Implementation for deposit
-        // This should take USDT from the user, buy the underlying assets in correct proportions,
-        // and mint shares to the user
-        userShares[msg.sender] = userShares[msg.sender].add(amount);
-        totalShares = totalShares.add(amount);
-        emit Deposit(msg.sender, amount);
+    function sellBasket(uint256 basketIndex) external {
+        require(basketIndex < userBaskets[msg.sender].length, "Invalid basket index");
+
+        Basket storage basket = userBaskets[msg.sender][basketIndex];
+        uint256 usdtReturned = 0;
+
+        for (uint i = 0; i < basket.tokenCount; i++) {
+            address tokenAddress = basket.allocations[i].tokenAddress;
+            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
+            if (tokenBalance > 0) {
+                usdtReturned += _swapTokensForUsdt(tokenAddress, tokenBalance);
+            }
+        }
+
+        usdtToken.transfer(msg.sender, usdtReturned);
+
+        // Remove the basket
+        if (basketIndex < userBaskets[msg.sender].length - 1) {
+            userBaskets[msg.sender][basketIndex] = userBaskets[msg.sender][userBaskets[msg.sender].length - 1];
+        }
+        userBaskets[msg.sender].pop();
+
+        emit BasketSold(msg.sender, basketIndex, usdtReturned);
     }
 
-    function withdraw(uint256 shareAmount) external {
-        require(shareAmount > 0, "Withdraw amount must be greater than 0");
-        require(userShares[msg.sender] >= shareAmount, "Insufficient shares");
-        // Implementation for withdrawal
-        // This should sell the underlying assets in correct proportions,
-        // transfer USDT back to the user, and burn the shares
-        userShares[msg.sender] = userShares[msg.sender].sub(shareAmount);
-        totalShares = totalShares.sub(shareAmount);
-        emit Withdraw(msg.sender, shareAmount);
+    function _investInBasket(Basket storage basket, uint256 usdtAmount) internal {
+        for (uint i = 0; i < basket.tokenCount; i++) {
+            TokenAllocation memory allocation = basket.allocations[i];
+            uint256 usdtForToken = (usdtAmount * allocation.percentage) / 100;
+            _swapUsdtForTokens(allocation.tokenAddress, usdtForToken);
+        }
     }
 
-    function rebalance() external onlyOwner {
-        // Implementation for rebalancing
-        // This should adjust the underlying asset allocations to match the target percentages
-        emit Rebalance();
+    function _swapUsdtForTokens(address tokenAddress, uint256 usdtAmount) internal {
+        usdtToken.approve(address(uniswapRouter), usdtAmount);
+
+        address[] memory path = new address[](2);
+        path[0] = address(usdtToken);
+        path[1] = tokenAddress;
+
+        uniswapRouter.swapExactTokensForTokens(
+            usdtAmount,
+            0,
+            path,
+            address(this),
+            block.timestamp
+        );
     }
 
-    // Additional helper functions as needed
+    function _swapTokensForUsdt(address tokenAddress, uint256 tokenAmount) internal returns (uint256) {
+        IERC20(tokenAddress).approve(address(uniswapRouter), tokenAmount);
+
+        address[] memory path = new address[](2);
+        path[0] = tokenAddress;
+        path[1] = address(usdtToken);
+
+        uint[] memory amounts = uniswapRouter.swapExactTokensForTokens(
+            tokenAmount,
+            0,
+            path,
+            address(this),
+            block.timestamp
+        );
+
+        return amounts[1]; // Return the amount of USDT received
+    }
+
+    function getUserBaskets(address user) external view returns (Basket[] memory) {
+        return userBaskets[user];
+    }
 }
