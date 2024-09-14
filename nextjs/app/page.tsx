@@ -3,8 +3,7 @@
 import React from 'react';
 import Link from "next/link";
 import { ContractProvider, useContractContext } from "./ContractContext";
-import GetTokenBalance from "./GetBalance";
-import ContractList from "./ContractList";
+import GetTokenBalance from "./GetTokenBalance";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
@@ -39,25 +38,46 @@ const HomeContent: React.FC = () => {
 
         <PageBody />
 
-        <ContractList addresses={addresses} />
+        {connectedAddress && (
+          <div className="mt-8 p-4 bg-base-200 rounded-lg">
+            <h2 className="text-2xl font-bold mb-4">Deployed Contracts and Balances</h2>
+            <div className="overflow-x-auto">
+              <table className="table w-full">
+                <thead>
+                  <tr>
+                    <th>Contract Name</th>
+                    <th>Address</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(addresses).map(([name, address]) => (
+                    <tr key={name}>
+                      <td>{name}</td>
+                      <td><Address address={address} /></td>
+                      <td>
+                        <GetTokenBalance
+                          contractAddress={address as `0x${string}`}
+                          userAddress={connectedAddress}
+                          contractName={name}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {contractAddress && (
-          <div className="mt-2 py-4 bg-base-200 rounded-lg">
+          <div className="mt-8 py-4 bg-base-200 rounded-lg">
             <div className="text-center max-w-2xl mx-auto my-4 p-2 bg-base-300 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-4">Current Lottery Contract</h2>
               <div className="bg-base-100 rounded-md overflow-hidden">
                 <p className="font-mono text-sm break-all">{contractAddress}</p>
               </div>
             </div>
-
-            {connectedAddress && (
-              <div className="mt-4">
-                <GetTokenBalance
-                  contractAddress={contractAddress as `0x${string}`}
-                  userAddress={connectedAddress as `0x${string}`}
-                />
-              </div>
-            )}
 
             {connectedAddress && (
               <div className="mt-4">
