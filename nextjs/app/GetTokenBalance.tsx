@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TokenABI from "../../Hardhat/artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json";
 import { formatEther } from "ethers";
-import { useReadContract } from "wagmi";
+import { useReadContract, useAccount } from "wagmi";
 
 interface GetTokenBalanceProps {
   contractAddress: `0x${string}`;
@@ -10,7 +10,8 @@ interface GetTokenBalanceProps {
 }
 
 const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, userAddress, contractName }) => {
-  const [showBalance, setShowBalance] = useState(false);
+  const [shouldFetch, setShouldFetch] = useState(false);
+  const { address: connectedAddress } = useAccount();
 
   const {
     data: balance,
@@ -22,17 +23,18 @@ const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, user
     abi: TokenABI.abi,
     functionName: "balanceOf",
     args: [userAddress],
+    // enabled: shouldFetch,
   });
 
   const handleFetchBalance = async () => {
-    setShowBalance(true);
+    setShouldFetch(true);
     await refetchBalance();
   };
 
-  if (!showBalance) {
+  if (!shouldFetch) {
     return (
       <button onClick={handleFetchBalance} className="btn btn-xs btn-primary">
-        Fetch
+        Fetch Balance
       </button>
     );
   }
@@ -48,6 +50,11 @@ const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, user
         Refresh
       </button>
       <span>{formatEther(tokenBalance)} {contractName}</span>
+      {connectedAddress !== userAddress && (
+        <span className="text-xs text-yellow-500">
+          (Note: Querying balance for {userAddress.slice(0, 6)}...{userAddress.slice(-4)})
+        </span>
+      )}
     </div>
   );
 };

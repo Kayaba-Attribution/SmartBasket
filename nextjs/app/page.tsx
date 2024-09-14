@@ -1,14 +1,14 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import Link from "next/link";
+import addresses from "../../Hardhat/addresses.json";
 import { ContractProvider, useContractContext } from "./ContractContext";
 import GetTokenBalance from "./GetTokenBalance";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
-import addresses from "../../Hardhat/addresses.json";
 
 const Home: NextPage = () => {
   return (
@@ -51,10 +51,12 @@ const HomeContent: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(addresses).map(([name, address]) => (
+                  {Object.entries(addresses).slice(3).map(([name, address]) => (
                     <tr key={name}>
                       <td>{name}</td>
-                      <td><Address address={address} /></td>
+                      <td>
+                        <Address address={address} />
+                      </td>
                       <td>
                         <GetTokenBalance
                           contractAddress={address as `0x${string}`}
@@ -78,12 +80,6 @@ const HomeContent: React.FC = () => {
                 <p className="font-mono text-sm break-all">{contractAddress}</p>
               </div>
             </div>
-
-            {connectedAddress && (
-              <div className="mt-4">
-                <AllTokenBalances />
-              </div>
-            )}
           </div>
         )}
 
