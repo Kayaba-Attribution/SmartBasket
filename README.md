@@ -65,6 +65,11 @@ The test suite covers various scenarios including:
 5. Deploy contracts: `npx hardhat run scripts/deploy.ts --network localhost`
 6. Run tests: `npx hardhat test --network localhost`
 
+## Front End
+
+1. Do all the hardhat side
+2. Get tokens `npx hardhat mint-tokens --address your_address_here --network localhost`
+
 ## Notes for Developers
 
 - The project uses Hardhat for development and testing
