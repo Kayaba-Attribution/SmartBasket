@@ -38,7 +38,7 @@ async function deployCore(owner: Signer): Promise<DeployedCore> {
   const WETH = new ContractFactory(WETH9.abi, WETH9.bytecode, owner);
   const weth = await WETH.deploy();
   const wethAddress = await weth.getAddress();
-  console.log(`WETH deployed to ${ wethAddress}`);
+  console.log(`WETH deployed to ${wethAddress}`);
 
   const Router = new ContractFactory(
     routerArtifact.abi,
@@ -63,52 +63,52 @@ async function deployToken(owner: Signer, name: string, symbol: string): Promise
 
 // Mint tokens, create pair, approve, and add liquidity
 async function setupTokenPair(
-    owner: Signer,
-    factory: any,
-    router: any,
-    token: any,
-    usdt: any,
-    targetPriceUSD: number
-  ) {
-    const ownerAddress = await owner.getAddress();
-  
-    // Mint tokens
-    const tokenAmount = parseUnits("1000", 18);
-    const usdtAmount = parseUnits((1000 * targetPriceUSD).toString(), 18); // Assuming USDT has 18 decimals
-    
-    await token.connect(owner).mint(ownerAddress, tokenAmount);
-    await usdt.connect(owner).mint(ownerAddress, usdtAmount);
-    
-    console.log("Creating pair...");
-    // Create pair
-    const tokenAddress = await token.getAddress();
-    const usdtAddress = await usdt.getAddress();
-    
-    await factory.createPair(tokenAddress, usdtAddress);
-    console.log("Pair created, getting pair address...");
-    const pairAddress = await factory.getPair(tokenAddress, usdtAddress);
-    console.log(`Pair created at ${pairAddress}`);
-  
-    // Approve router
-    const routerAddress = await router.getAddress();
-    await token.connect(owner).approve(routerAddress, MaxUint256);
-    await usdt.connect(owner).approve(routerAddress, MaxUint256);
-  
-    // Add liquidity
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
-    await router.connect(owner).addLiquidity(
-      tokenAddress,
-      usdtAddress,
-      tokenAmount,
-      usdtAmount,
-      0,
-      0,
-      ownerAddress,
-      deadline
-    );
-  
-    console.log(`Liquidity added for ${await token.symbol()} / USDT pair | Target price: ${targetPriceUSD}`);
-  }
+  owner: Signer,
+  factory: any,
+  router: any,
+  token: any,
+  usdt: any,
+  targetPriceUSD: number
+) {
+  const ownerAddress = await owner.getAddress();
+
+  // Mint tokens
+  const tokenAmount = parseUnits("1000", 18);
+  const usdtAmount = parseUnits((1000 * targetPriceUSD).toString(), 18); // Assuming USDT has 18 decimals
+
+  await token.connect(owner).mint(ownerAddress, tokenAmount);
+  await usdt.connect(owner).mint(ownerAddress, usdtAmount);
+
+  console.log("Creating pair...");
+  // Create pair
+  const tokenAddress = await token.getAddress();
+  const usdtAddress = await usdt.getAddress();
+
+  await factory.createPair(tokenAddress, usdtAddress);
+  console.log("Pair created, getting pair address...");
+  const pairAddress = await factory.getPair(tokenAddress, usdtAddress);
+  console.log(`Pair created at ${pairAddress}`);
+
+  // Approve router
+  const routerAddress = await router.getAddress();
+  await token.connect(owner).approve(routerAddress, MaxUint256);
+  await usdt.connect(owner).approve(routerAddress, MaxUint256);
+
+  // Add liquidity
+  const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
+  await router.connect(owner).addLiquidity(
+    tokenAddress,
+    usdtAddress,
+    tokenAmount,
+    usdtAmount,
+    0,
+    0,
+    ownerAddress,
+    deadline
+  );
+
+  console.log(`Liquidity added for ${await token.symbol()} / USDT pair | Target price: ${targetPriceUSD}`);
+}
 
 
 async function main() {
@@ -170,20 +170,24 @@ async function main() {
 
   const addresses = {
     // Core contracts
-    Factory: await core.factory.getAddress(),
-    Router: await core.router.getAddress(),
-    WETH: await core.weth.getAddress(),
+    core: {
+      Factory: await core.factory.getAddress(),
+      Router: await core.router.getAddress(),
+      WETH: await core.weth.getAddress(),
+    },
     // Tokens
-    USDT: usdt.address,
-    ETH: eth.address,
-    WBTC: wbtc.address,
-    XRP: xrp.address,
-    UNI: uni.address,
-    LINK: link.address,
-    DOGE: doge.address,
-    SHIB: shib.address,
-    PEPE: pepe.address,
-    FLOKI: floki.address
+    tokens: {
+      USDT: usdt.address,
+      ETH: eth.address,
+      WBTC: wbtc.address,
+      XRP: xrp.address,
+      UNI: uni.address,
+      LINK: link.address,
+      DOGE: doge.address,
+      SHIB: shib.address,
+      PEPE: pepe.address,
+      FLOKI: floki.address
+    }
   };
   fs.writeFileSync('addresses.json', JSON.stringify(addresses));
 }

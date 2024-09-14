@@ -30,7 +30,7 @@ task("mint-tokens", "Mints test tokens to a specified address")
 
         // Mint tokens
         for (const [tokenName, amount] of Object.entries(tokenAmounts)) {
-            const tokenContract = new ethers.Contract(addresses[tokenName], ERC20_BASE_ABI.abi, owner);
+            const tokenContract = new ethers.Contract(addresses.tokens[tokenName], ERC20_BASE_ABI.abi, owner);
 
             try {
                 const tx = await tokenContract.mint(taskArgs.address, amount);

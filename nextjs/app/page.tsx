@@ -51,7 +51,7 @@ const HomeContent: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(addresses).slice(3).map(([name, address]) => (
+                  {Object.entries(addresses.tokens).map(([name, address]) => (
                     <tr key={name}>
                       <td>{name}</td>
                       <td>
