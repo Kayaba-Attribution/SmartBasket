@@ -1,18 +1,15 @@
 "use client";
 
+import React from 'react';
 import Link from "next/link";
-// import BurnTokens from "./BurnTokens";
-// import BuyTokens from "./BuyTokens";
-// import OpenLottery from "./OpenLottery";
-// import PlaceBet from "./PlaceBet";
 import { ContractProvider, useContractContext } from "./ContractContext";
-// import DeployContractButton from "./DeployContractButton";
 import GetTokenBalance from "./GetBalance";
-// import BetsContainer from "./bets/BetsContainer";
+import ContractList from "./ContractList";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
+import addresses from "../../Hardhat/addresses.json";
 
 const Home: NextPage = () => {
   return (
@@ -22,7 +19,7 @@ const Home: NextPage = () => {
   );
 };
 
-const HomeContent: NextPage = () => {
+const HomeContent: React.FC = () => {
   const { address: connectedAddress } = useAccount();
   const { contractAddress } = useContractContext();
 
@@ -36,11 +33,14 @@ const HomeContent: NextPage = () => {
           </h1>
           <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
             <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
+            {connectedAddress && <Address address={connectedAddress} />}
           </div>
         </div>
 
         <PageBody />
+
+        <ContractList addresses={addresses} />
+
         {contractAddress && (
           <div className="mt-2 py-4 bg-base-200 rounded-lg">
             <div className="text-center max-w-2xl mx-auto my-4 p-2 bg-base-300 rounded-lg shadow-md">
@@ -59,38 +59,13 @@ const HomeContent: NextPage = () => {
               </div>
             )}
 
-            {/* <div className="mt-4 flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <BuyTokens contractAddress={contractAddress as `0x${string}`} />
+            {connectedAddress && (
+              <div className="mt-4">
+                <AllTokenBalances />
               </div>
-
-              {connectedAddress && (
-                <div className="flex-1">
-                  <BurnTokens lotteryAddress={contractAddress as `0x${string}`} />
-                </div>
-              )}
-            </div> */}
-
-            {/* Open Lottery */}
-            {/* {connectedAddress && (
-              <div className="justify-center">
-                <OpenLottery contractAddress={contractAddress as `0x${string}`} />
-              </div>
-            )} */}
-
-            {/* Place Bet UI */}
-            {/* <div className="mt-4 flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                {connectedAddress && (
-                  <div className="flex-1">
-                    <PlaceBet contractAddress={contractAddress as `0x${string}`} />
-                  </div>
-                )}
-              </div>
-            </div> */}
+            )}
           </div>
         )}
-        {/* {contractAddress && <BetsContainer contractAddress={contractAddress as `0x${string}`} />} */}
 
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
           <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
@@ -121,13 +96,12 @@ const HomeContent: NextPage = () => {
   );
 };
 
-function PageBody() {
+const PageBody: React.FC = () => {
   return (
     <>
       <p className="text-center text-lg">Start by getting some Sepolia ETH through Faucet!</p>
-      {/* <DeployContractButton /> */}
     </>
   );
-}
+};
 
 export default Home;
