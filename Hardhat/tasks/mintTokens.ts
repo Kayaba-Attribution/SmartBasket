@@ -1,13 +1,14 @@
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import ERC20_BASE_ABI from "../artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json";
-
 
 task("mint-tokens", "Mints test tokens to a specified address")
     .addParam("address", "The address to mint tokens to")
     .setAction(async (taskArgs: { address: string }, hre: HardhatRuntimeEnvironment) => {
         const { ethers } = hre;
         const [owner] = await ethers.getSigners();
+
+        const ERC20_BASE_ABI = await import("../artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json");
+        const SmartBasket_ABI = await import("../artifacts/contracts/SmartBasket.sol/SmartBasket.json");    
 
         // Load the addresses from the JSON file
         const fs = require("fs");

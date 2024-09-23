@@ -1,8 +1,6 @@
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { parseEther } from "ethers";
-import ERC20_BASE_ABI from "../artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json";
-import SmartBasket_ABI from "../artifacts/contracts/SmartBasket.sol/SmartBasket.json";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -10,6 +8,9 @@ dotenv.config();
 task("create-baskets", "Creates test baskets in the SmartBasket contract")
     .setAction(async (taskArgs: {}, hre: HardhatRuntimeEnvironment) => {
         const { ethers } = hre;
+
+        const ERC20_BASE_ABI = await import("../artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json");
+        const SmartBasket_ABI = await import("../artifacts/contracts/SmartBasket.sol/SmartBasket.json");    
 
         // Load the addresses from the JSON file
         const fs = require("fs");
