@@ -1,21 +1,5 @@
 # SmartBasket: Customizable Token Portfolio Manager
 
-
-#### Dummy basket issue:
-- deployer has 3 dummy baskets
-- connected address has 0
-- we cannot use something like `mint-tokens` because it would require the private-key of the target user address
-   - needed to sign a txn to allow the SmartBasket to use the user USDT
-
-Solutions:
-1. Pass the PK only to the command
-   - ie: `npx hardhat create-baskets --network localhost` get wallet address from the .env
-2. create the `createBasket` component
-   - check for allowance
-   - deploy basket
-
-Update: tried approach 2 but I could not find the default burner address PK that is connected to the front end. 
-
 ### Things to do for an MVP:
 
 - **Create basket**
@@ -98,6 +82,15 @@ The test suite covers various scenarios including:
 - Invalid input handling
 - Multi-basket management
 - Value and asset detail retrieval
+
+## Setup and Deployment for Hardhat
+
+1. Clone the repository
+2. `cd Hardhat` and install dependencies: `npm install`
+3. Compile `npx hardhat compile`
+4. Start Node `npx hardhat node`
+5. Deploy contracts: `npx hardhat run scripts/deploy.ts --network localhost`
+6. Run tests: `npx hardhat test --network localhost`
 
 ## Setup and Deployment for Hardhat
 
