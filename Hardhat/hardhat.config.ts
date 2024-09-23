@@ -2,6 +2,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import 'dotenv/config'
 import "./tasks/mintTokens"; 
+import "./tasks/createBaskets";
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "test";
