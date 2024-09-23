@@ -17,10 +17,10 @@ describe("UsdtBasedCustomBasket", function () {
     [owner, user1, user2] = await ethers.getSigners();
 
     const UsdtBasedCustomBasket = await ethers.getContractFactory("SmartBasket");
-    customBasket = await UsdtBasedCustomBasket.deploy(addresses.Router, addresses.USDT);
+    customBasket = await UsdtBasedCustomBasket.deploy(addresses.core.Router, addresses.tokens.USDT);
     const customBasketAddress = await customBasket.getAddress();
 
-    usdt = await ethers.getContractAt("ERC20_BASE", addresses.USDT);
+    usdt = await ethers.getContractAt("ERC20_BASE", addresses.tokens.USDT);
 
     // Mint some USDT to users for testing
     await usdt.mint(await user1.getAddress(), usdtAmount);
@@ -32,15 +32,22 @@ describe("UsdtBasedCustomBasket", function () {
   });
 
   it("Should deploy the contract correctly", async function () {
-    expect(await customBasket.uniswapRouter()).to.equal(addresses.Router);
-    expect(await customBasket.usdtToken()).to.equal(addresses.USDT);
+    expect(await customBasket.uniswapRouter()).to.equal(addresses.core.Router);
+    expect(await customBasket.usdtToken()).to.equal(addresses.tokens.USDT);
   });
 
   it("Should create a basket", async function () {
     const allocations = [
-      { tokenAddress: addresses.ETH, percentage: 50 },
-      { tokenAddress: addresses.WBTC, percentage: 50 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 50 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 50 },
     ];
+
+    // add more tokens
+    // combinations of tokens
+    // drop downs and custom baskets
+    // improve the UI
+    // sell % of basket or add more to positions 
+    // ...
 
     await expect(customBasket.connect(user1).createBasket(allocations, parseEther("100")))
       .to.emit(customBasket, "BasketCreated")
@@ -54,8 +61,8 @@ describe("UsdtBasedCustomBasket", function () {
 
   it("Should not create a basket with invalid allocations", async function () {
     const invalidAllocations = [
-      { tokenAddress: addresses.ETH, percentage: 50 },
-      { tokenAddress: addresses.WBTC, percentage: 40 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 50 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 40 },
     ];
 
     await expect(customBasket.connect(user1).createBasket(invalidAllocations, parseEther("100")))
@@ -64,8 +71,8 @@ describe("UsdtBasedCustomBasket", function () {
 
   it("Should sell a basket", async function () {
     const allocations = [
-      { tokenAddress: addresses.ETH, percentage: 50 },
-      { tokenAddress: addresses.WBTC, percentage: 50 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 50 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 50 },
     ];
 
     await customBasket.connect(user1).createBasket(allocations, parseEther("100"));
@@ -91,11 +98,11 @@ describe("UsdtBasedCustomBasket", function () {
 
   it("Should handle multiple baskets for a user", async function () {
     const allocations1 = [
-      { tokenAddress: addresses.ETH, percentage: 100 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 100 },
     ];
     const allocations2 = [
-      { tokenAddress: addresses.WBTC, percentage: 50 },
-      { tokenAddress: addresses.XRP, percentage: 50 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 50 },
+      { tokenAddress: addresses.tokens.XRP, percentage: 50 },
     ];
 
     await customBasket.connect(user1).createBasket(allocations1, parseEther("50"));
@@ -109,8 +116,8 @@ describe("UsdtBasedCustomBasket", function () {
 
   it("Should get the total value of a basket", async function () {
     const allocations = [
-      { tokenAddress: addresses.ETH, percentage: 50 },
-      { tokenAddress: addresses.WBTC, percentage: 50 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 50 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 50 },
     ];
 
     await customBasket.connect(user1).createBasket(allocations, parseEther("100"));
@@ -126,8 +133,8 @@ describe("UsdtBasedCustomBasket", function () {
 
   it("Should get asset details of a basket", async function () {
     const allocations = [
-      { tokenAddress: addresses.ETH, percentage: 60 },
-      { tokenAddress: addresses.WBTC, percentage: 40 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 60 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 40 },
     ];
 
     await customBasket.connect(user1).createBasket(allocations, parseEther("100"));
@@ -138,8 +145,8 @@ describe("UsdtBasedCustomBasket", function () {
     expect(tokenAmounts.length).to.equal(2);
     expect(tokenValues.length).to.equal(2);
 
-    expect(tokenAddresses[0]).to.equal(addresses.ETH);
-    expect(tokenAddresses[1]).to.equal(addresses.WBTC);
+    expect(tokenAddresses[0]).to.equal(addresses.tokens.ETH);
+    expect(tokenAddresses[1]).to.equal(addresses.tokens.WBTC);
 
     // Check that token amounts are non-zero
     expect(tokenAmounts[0]).to.be.gt(0);
@@ -168,11 +175,11 @@ describe("UsdtBasedCustomBasket", function () {
 
   it("Should handle multiple baskets when getting total value and asset details", async function () {
     const allocations1 = [
-      { tokenAddress: addresses.ETH, percentage: 100 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 100 },
     ];
     const allocations2 = [
-      { tokenAddress: addresses.WBTC, percentage: 50 },
-      { tokenAddress: addresses.XRP, percentage: 50 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 50 },
+      { tokenAddress: addresses.tokens.XRP, percentage: 50 },
     ];
 
     await customBasket.connect(user1).createBasket(allocations1, parseEther("50"));
