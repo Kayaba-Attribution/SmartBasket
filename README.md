@@ -86,16 +86,21 @@ The test suite covers various scenarios including:
 ## Setup and Deployment for Hardhat
 
 1. Clone the repository
-2. Install dependencies: `npm install`
+2. `cd Hardhat` and install dependencies: `npm install`
 3. Compile `npx hardhat compile`
 4. Start Node `npx hardhat node`
 5. Deploy contracts: `npx hardhat run scripts/deploy.ts --network localhost`
 6. Run tests: `npx hardhat test --network localhost`
 
-## Front End
+## Setup and Deployment for Hardhat
 
-1. Do all the hardhat side
-2. Get tokens `npx hardhat mint-tokens --address your_address_here --network localhost`
+1. `cd nextjs` and install dependencies: `npm install`
+2. Start the project `npm run dev`
+3. You should see the balances, if not check:
+   - node running?
+   - deploy script ran?
+5. Get tokens `npx hardhat mint-tokens --address your_address_here --network localhost`
+6. When re-fetching the balances you should see the values
 
 ## Notes for Developers
 

@@ -1,11 +1,15 @@
 "use client";
 
+// React/Next.js
 import React from "react";
 import Link from "next/link";
 import addresses from "../../Hardhat/addresses.json";
 import { ContractProvider, useContractContext } from "./ContractContext";
+// Custom components
 import GetTokenBalance from "./GetTokenBalance";
+import GetUserBaskets from "./GetUserBaskets";
 import type { NextPage } from "next";
+// Web3
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
@@ -40,6 +44,9 @@ const HomeContent: React.FC = () => {
 
         {connectedAddress && (
           <div className="mt-8 p-4 bg-base-200 rounded-lg">
+            <div className="mt-8 p-4 bg-base-200 rounded-lg">
+              <GetUserBaskets />
+            </div>
             <h2 className="text-2xl font-bold mb-4">Deployed Contracts and Balances</h2>
             <div className="overflow-x-auto">
               <table className="table w-full">
@@ -47,10 +54,22 @@ const HomeContent: React.FC = () => {
                   <tr>
                     <th>Contract Name</th>
                     <th>Address</th>
-                    <th>Balance</th>
+                    <th>Balance/Other</th>
                   </tr>
                 </thead>
                 <tbody>
+                  {Object.entries(addresses.core).map(([name, address]) => (
+                    <tr key={name}>
+                      <td>{name}</td>
+                      <td>
+                        <Address address={address} />
+                      </td>
+                      <td>Core</td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td colSpan={3} className="border-t border-base-300"></td>
+                  </tr>
                   {Object.entries(addresses.tokens).map(([name, address]) => (
                     <tr key={name}>
                       <td>{name}</td>

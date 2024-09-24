@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { Contract, ContractFactory, Signer } from "ethers";
+import { Contract, ContractFactory, parseEther, Signer } from "ethers";
 import { parseUnits } from "ethers";
 
 // Import artifacts
@@ -110,6 +110,13 @@ async function setupTokenPair(
   console.log(`Liquidity added for ${await token.symbol()} / USDT pair | Target price: ${targetPriceUSD}`);
 }
 
+async function deploySmartBasket(owner: Signer, router: any, usdt: any) {
+  const SmartBasket = await ethers.getContractFactory("SmartBasket");
+  const customBasket = await SmartBasket.deploy(router, usdt);
+
+  return customBasket;
+}
+
 
 async function main() {
   const [owner, user1, user2, user3] = await ethers.getSigners();
@@ -152,6 +159,40 @@ async function main() {
   await setupTokenPair(owner, core.factory, core.router, pepe.contract, usdt.contract, 0.000001);
   await setupTokenPair(owner, core.factory, core.router, floki.contract, usdt.contract, 0.00002);
 
+  // Deploy SmartBasket contract
+  const SmartBasket = await deploySmartBasket(owner, core.router, usdt.address);
+  const smartBasketAddress = await SmartBasket.getAddress();
+  console.log(`SmartBasket deployed to ${smartBasketAddress}`);
+
+  // Deploy dummy baskets for testing
+  const lowRiskAllocations = [
+    { tokenAddress: eth.address, percentage: 60 },
+    { tokenAddress: wbtc.address, percentage: 20 },
+    { tokenAddress: xrp.address, percentage: 20 },
+  ];
+  const mediumRiskAllocations = [
+    { tokenAddress: uni.address, percentage: 50 },
+    { tokenAddress: link.address, percentage: 50 },
+  ];
+  const highRiskAllocations = [
+    { tokenAddress: doge.address, percentage: 25 },
+    { tokenAddress: shib.address, percentage: 25 },
+    { tokenAddress: pepe.address, percentage: 25 },
+    { tokenAddress: floki.address, percentage: 25 },
+  ];
+
+  // approve USDT spending for the smart basket contract
+  await usdt.contract.approve(smartBasketAddress, MaxUint256);
+
+  // Create baskets
+  await SmartBasket.createBasket(lowRiskAllocations, parseEther("10000"));
+  await SmartBasket.createBasket(mediumRiskAllocations, parseEther("1000"));
+  await SmartBasket.createBasket(highRiskAllocations, parseEther("100"));
+
+  // Verify baskets created
+  const userBaskets = await SmartBasket.getUserBaskets(await owner.getAddress());
+  console.log("User baskets:", userBaskets.length);
+
   console.log("Deployment and setup completed");
 
   // Log addresses for reference
@@ -174,6 +215,7 @@ async function main() {
       Factory: await core.factory.getAddress(),
       Router: await core.router.getAddress(),
       WETH: await core.weth.getAddress(),
+      SmartBasket: smartBasketAddress
     },
     // Tokens
     tokens: {
