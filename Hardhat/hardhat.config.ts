@@ -3,8 +3,8 @@ import "@nomicfoundation/hardhat-toolbox";
 import 'dotenv/config'
 import "./tasks/mintTokens"; 
 
-const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "test";
+const ALCHEMY_API_KEY=process.env.ALCHEMY_API_KEY || "";
+const PRIVATE_KEY=process.env.PRIVATE_KEY || "test";
 console.log(`Using Alchemy API Key: ${PRIVATE_KEY}`);
 
 
