@@ -5,6 +5,7 @@ import Link from "next/link";
 import addresses from "../../Hardhat/addresses.json";
 import { BasketProvider } from "./BasketContext";
 import CreateBasket from "./CreateBasket";
+import SellBasket from "./SellBasket";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
 import { useAccount } from "wagmi";
@@ -66,7 +67,7 @@ const Home: React.FC = () => {
               <section>
                 <div className="bg-base-300 rounded-lg p-6 shadow-lg h-full">
                   <h2 className="text-2xl font-semibold mb-4">Sell Basket</h2>
-                  <p className="text-gray-500">Feature coming soon...</p>
+                  <SellBasket />
                 </div>
               </section>
 
