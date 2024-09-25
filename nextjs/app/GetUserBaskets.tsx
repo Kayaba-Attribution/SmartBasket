@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../../Hardhat/addresses.json";
 import SmartBasketABI from "../../Hardhat/artifacts/contracts/SmartBasket.sol/SmartBasket.json";
+import { useBasketContext } from "./BasketContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 
@@ -13,6 +14,7 @@ interface BasketDetails {
 }
 
 const GetUserBaskets: React.FC = () => {
+  const { refreshBaskets, setRefreshBaskets } = useBasketContext();
   const { address } = useAccount();
   const [basketDetails, setBasketDetails] = useState<BasketDetails[]>([]);
 
@@ -20,12 +22,20 @@ const GetUserBaskets: React.FC = () => {
     data: userBaskets,
     isError,
     isLoading,
+    refetch,
   } = useReadContract({
     address: addresses.core.SmartBasket as `0x${string}`,
     abi: SmartBasketABI.abi,
     functionName: "getUserBaskets",
     args: [address],
   });
+
+  useEffect(() => {
+    if (refreshBaskets) {
+      refetch(); // Re-fetch the basket data
+      setRefreshBaskets(false); // Reset the refresh flag
+    }
+  }, [refreshBaskets, refetch, setRefreshBaskets]);
 
   const basketCount = Array.isArray(userBaskets) ? userBaskets.length : 0;
 
@@ -76,6 +86,10 @@ const GetUserBaskets: React.FC = () => {
 
   return (
     <div className="overflow-x-auto">
+      <div className="flex justify-evenly">
+        <h2 className="text-2xl font-semibold mb-4">Your Baskets</h2>
+        <h2 className="text-2xl font-semibold mb-4" >[ {basketCount} ]</h2>
+      </div>
       <table className="table w-full">
         <thead>
           <tr>

@@ -3,10 +3,10 @@
 ### Things to do for an MVP:
 
 - **Create basket**
-   - check allowance of usdt of the user to the basket contract
-   - create component
-      - input for amount in usdt
-      - button to call the createBasket with hardcoded allocations
+   - check allowance of usdt of the user to the basket contract ✅
+   - create component ✅
+      - input for amount in usdt ✅
+      - button to call the createBasket with hardcoded allocations ✅
    - extra (should be done):
       - choose the type of assets and the percentages
       - max 5 tokens, % must sum to 100
@@ -19,10 +19,11 @@
       - modify contract to sell only a % of the basket ie: 25%
       - modify to be able to sell x amount of usdt
 - **View functions**
-   - use getUserBaskets to get all the users baskets (user)
-   - use getBasketAssetDetails (user, index) to get basket details
-   - use getBasketTotalValue (user, index) to get usdt value of basket
-   - showcase the results
+   - use getUserBaskets to get all the users baskets (user) ✅
+   - use getBasketAssetDetails (user, index) to get basket details ✅
+   - use getBasketTotalValue (user, index) to get usdt value of basket ✅
+   - showcase the results ✅
+   - save all, show all porfolio total balance and refresh on create
 - **Others**
    - improve UI
    - deploy on testnet
