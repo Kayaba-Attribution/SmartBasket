@@ -4,7 +4,6 @@
 import React from "react";
 import Link from "next/link";
 import addresses from "../../Hardhat/addresses.json";
-import { ContractProvider, useContractContext } from "./ContractContext";
 // Custom components
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
@@ -15,16 +14,12 @@ import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 
 const Home: NextPage = () => {
-  return (
-    <ContractProvider>
-      <HomeContent />
-    </ContractProvider>
-  );
+  return <HomeContent />;
 };
 
 const HomeContent: React.FC = () => {
   const { address: connectedAddress } = useAccount();
-  const { contractAddress } = useContractContext();
+  const contractAddress = addresses.core.SmartBasket;
 
   return (
     <>
@@ -39,6 +34,17 @@ const HomeContent: React.FC = () => {
             {connectedAddress && <Address address={connectedAddress} />}
           </div>
         </div>
+
+        {contractAddress && (
+          <div className="mt-8 py-4 bg-base-200 rounded-lg">
+            <div className="text-center max-w-2xl mx-auto my-4 p-2 bg-base-300 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold mb-4">Current Smart Basket </h2>
+              <div className="bg-base-100 rounded-md overflow-hidden">
+                <p className="font-mono text-sm break-all">{contractAddress}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <PageBody />
 
@@ -79,7 +85,7 @@ const HomeContent: React.FC = () => {
                       <td>
                         <GetTokenBalance
                           contractAddress={address as `0x${string}`}
-                          userAddress={connectedAddress}
+                          userAddress={connectedAddress as `0x${string}`}
                           contractName={name}
                         />
                       </td>
@@ -87,17 +93,6 @@ const HomeContent: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        )}
-
-        {contractAddress && (
-          <div className="mt-8 py-4 bg-base-200 rounded-lg">
-            <div className="text-center max-w-2xl mx-auto my-4 p-2 bg-base-300 rounded-lg shadow-md">
-              <h2 className="text-2xl font-bold mb-4">Current Lottery Contract</h2>
-              <div className="bg-base-100 rounded-md overflow-hidden">
-                <p className="font-mono text-sm break-all">{contractAddress}</p>
-              </div>
             </div>
           </div>
         )}
