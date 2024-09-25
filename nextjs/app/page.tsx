@@ -24,6 +24,7 @@ const Home: React.FC = () => {
             <section className="col-span-1 md:col-span-2">
               <div className="bg-base-200 rounded-lg p-6 shadow-lg flex justify-between">
                 <div>
+                  
                   <h2 className="text-2xl font-semibold mb-4">Your Account</h2>
                   <p className="mb-2">
                     Connected Address: <Address address={connectedAddress} />

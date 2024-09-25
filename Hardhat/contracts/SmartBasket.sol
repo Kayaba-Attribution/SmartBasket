@@ -12,6 +12,7 @@ contract SmartBasket is Ownable {
     struct TokenAllocation {
         address tokenAddress;
         uint256 percentage;
+        uint256 amount;
     }
 
     struct Basket {
@@ -22,14 +23,22 @@ contract SmartBasket is Ownable {
 
     mapping(address => Basket[]) public userBaskets;
 
-    event BasketCreated(address indexed user, uint256 basketIndex, uint256 usdtAmount);
-    event BasketSold(address indexed user, uint256 basketIndex, uint256 usdtReturned);
+    event BasketCreated(
+        address indexed user,
+        uint256 basketIndex,
+        uint256 usdtAmount
+    );
+    event BasketSold(
+        address indexed user,
+        uint256 basketIndex,
+        uint256 usdtReturned
+    );
 
     constructor(address _uniswapRouter, address _usdtAddress) {
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
         usdtToken = IERC20(_usdtAddress);
     }
-
+    
     function createBasket(TokenAllocation[] memory _allocations, uint256 _usdtAmount) external {
         require(_allocations.length > 0 && _allocations.length <= 5, "Invalid number of tokens");
         require(_usdtAmount > 0, "Must send USDT");
@@ -38,7 +47,8 @@ contract SmartBasket is Ownable {
         Basket storage newBasket = userBaskets[msg.sender].push();
 
         for (uint i = 0; i < _allocations.length; i++) {
-            newBasket.allocations[i] = _allocations[i];
+            newBasket.allocations[i].tokenAddress = _allocations[i].tokenAddress;
+            newBasket.allocations[i].percentage = _allocations[i].percentage;
             totalPercentage += _allocations[i].percentage;
         }
 
@@ -53,16 +63,20 @@ contract SmartBasket is Ownable {
 
         emit BasketCreated(msg.sender, userBaskets[msg.sender].length - 1, _usdtAmount);
     }
-
     function sellBasket(uint256 basketIndex) external {
-        require(basketIndex < userBaskets[msg.sender].length, "Invalid basket index");
+        require(
+            basketIndex < userBaskets[msg.sender].length,
+            "Invalid basket index"
+        );
 
         Basket storage basket = userBaskets[msg.sender][basketIndex];
         uint256 usdtReturned = 0;
 
         for (uint i = 0; i < basket.tokenCount; i++) {
             address tokenAddress = basket.allocations[i].tokenAddress;
-            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
+            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(
+                address(this)
+            );
             if (tokenBalance > 0) {
                 usdtReturned += _swapTokensForUsdt(tokenAddress, tokenBalance);
             }
@@ -72,7 +86,9 @@ contract SmartBasket is Ownable {
 
         // Remove the basket
         if (basketIndex < userBaskets[msg.sender].length - 1) {
-            userBaskets[msg.sender][basketIndex] = userBaskets[msg.sender][userBaskets[msg.sender].length - 1];
+            userBaskets[msg.sender][basketIndex] = userBaskets[msg.sender][
+                userBaskets[msg.sender].length - 1
+            ];
         }
         userBaskets[msg.sender].pop();
 
@@ -81,29 +97,36 @@ contract SmartBasket is Ownable {
 
     function _investInBasket(Basket storage basket, uint256 usdtAmount) internal {
         for (uint i = 0; i < basket.tokenCount; i++) {
-            TokenAllocation memory allocation = basket.allocations[i];
+            TokenAllocation storage allocation = basket.allocations[i];
             uint256 usdtForToken = (usdtAmount * allocation.percentage) / 100;
-            _swapUsdtForTokens(allocation.tokenAddress, usdtForToken);
+            uint256 tokensBought = _swapUsdtForTokens(allocation.tokenAddress, usdtForToken);
+            allocation.amount = tokensBought; // Store the amount of tokens bought
         }
     }
-
-    function _swapUsdtForTokens(address tokenAddress, uint256 usdtAmount) internal {
+    function _swapUsdtForTokens(
+        address tokenAddress,
+        uint256 usdtAmount
+    ) internal returns (uint256) {
         usdtToken.approve(address(uniswapRouter), usdtAmount);
 
         address[] memory path = new address[](2);
         path[0] = address(usdtToken);
         path[1] = tokenAddress;
 
-        uniswapRouter.swapExactTokensForTokens(
+        uint[] memory amounts = uniswapRouter.swapExactTokensForTokens(
             usdtAmount,
             0,
             path,
             address(this),
             block.timestamp
         );
-    }
 
-    function _swapTokensForUsdt(address tokenAddress, uint256 tokenAmount) internal returns (uint256) {
+        return amounts[1]; // Return the amount of tokens received
+    }
+    function _swapTokensForUsdt(
+        address tokenAddress,
+        uint256 tokenAmount
+    ) internal returns (uint256) {
         IERC20(tokenAddress).approve(address(uniswapRouter), tokenAmount);
 
         address[] memory path = new address[](2);
@@ -121,27 +144,39 @@ contract SmartBasket is Ownable {
         return amounts[1]; // Return the amount of USDT received
     }
 
-    function getUserBaskets(address user) external view returns (Basket[] memory) {
+    function getUserBaskets(
+        address user
+    ) external view returns (Basket[] memory) {
         return userBaskets[user];
     }
 
-    function getBasketTotalValue(address user, uint256 basketIndex) public view returns (uint256) {
+    function getBasketTotalValue(
+        address user,
+        uint256 basketIndex
+    ) public view returns (uint256) {
         require(basketIndex < userBaskets[user].length, "Invalid basket index");
         Basket storage basket = userBaskets[user][basketIndex];
         uint256 totalValue = 0;
 
         for (uint i = 0; i < basket.tokenCount; i++) {
-            address tokenAddress = basket.allocations[i].tokenAddress;
-            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
-            if (tokenBalance > 0) {
-                totalValue += getEstimatedUsdtValue(tokenAddress, tokenBalance);
-            }
+            TokenAllocation storage allocation = basket.allocations[i];
+            totalValue += getEstimatedUsdtValue(
+                allocation.tokenAddress,
+                allocation.amount
+            );
         }
 
         return totalValue;
     }
 
-    function getBasketAssetDetails(address user, uint256 basketIndex) public view returns (address[] memory, uint256[] memory, uint256[] memory) {
+    function getBasketAssetDetails(
+        address user,
+        uint256 basketIndex
+    )
+        public
+        view
+        returns (address[] memory, uint256[] memory, uint256[] memory)
+    {
         require(basketIndex < userBaskets[user].length, "Invalid basket index");
         Basket storage basket = userBaskets[user][basketIndex];
 
@@ -150,18 +185,22 @@ contract SmartBasket is Ownable {
         uint256[] memory tokenValues = new uint256[](basket.tokenCount);
 
         for (uint i = 0; i < basket.tokenCount; i++) {
-            address tokenAddress = basket.allocations[i].tokenAddress;
-            uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
-
-            tokenAddresses[i] = tokenAddress;
-            tokenAmounts[i] = tokenBalance;
-            tokenValues[i] = getEstimatedUsdtValue(tokenAddress, tokenBalance);
+            TokenAllocation storage allocation = basket.allocations[i];
+            tokenAddresses[i] = allocation.tokenAddress;
+            tokenAmounts[i] = allocation.amount;
+            tokenValues[i] = getEstimatedUsdtValue(
+                allocation.tokenAddress,
+                allocation.amount
+            );
         }
 
         return (tokenAddresses, tokenAmounts, tokenValues);
     }
 
-    function getEstimatedUsdtValue(address tokenAddress, uint256 tokenAmount) internal view returns (uint256) {
+    function getEstimatedUsdtValue(
+        address tokenAddress,
+        uint256 tokenAmount
+    ) internal view returns (uint256) {
         if (tokenAddress == address(usdtToken)) {
             return tokenAmount;
         }
@@ -170,7 +209,10 @@ contract SmartBasket is Ownable {
         path[0] = tokenAddress;
         path[1] = address(usdtToken);
 
-        uint256[] memory amounts = uniswapRouter.getAmountsOut(tokenAmount, path);
+        uint256[] memory amounts = uniswapRouter.getAmountsOut(
+            tokenAmount,
+            path
+        );
         return amounts[1];
     }
 }

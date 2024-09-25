@@ -60,9 +60,12 @@ function CreateBasket() {
 
   const handleCreateBasket = async () => {
     const allocations = [
-      { tokenAddress: addresses.tokens.ETH, percentage: 50 },
-      { tokenAddress: addresses.tokens.WBTC, percentage: 50 },
+      { tokenAddress: addresses.tokens.ETH, percentage: 50, amount: 0 },
+      { tokenAddress: addresses.tokens.WBTC, percentage: 50, amount: 0 },
     ];
+
+    console.log("Creating basket with allocations:", allocations);
+    console.log("Creating basket with amount:", basketAmount);
 
     createBasket({
       address: basketAddress,

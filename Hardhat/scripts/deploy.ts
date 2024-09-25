@@ -166,19 +166,19 @@ async function main() {
 
   // Deploy dummy baskets for testing
   const lowRiskAllocations = [
-    { tokenAddress: eth.address, percentage: 60 },
-    { tokenAddress: wbtc.address, percentage: 20 },
-    { tokenAddress: xrp.address, percentage: 20 },
+    { tokenAddress: eth.address, percentage: 60, amount: 0 }, 
+    { tokenAddress: wbtc.address, percentage: 20, amount: 0 },
+    { tokenAddress: xrp.address, percentage: 20, amount: 0 },
   ];
   const mediumRiskAllocations = [
-    { tokenAddress: uni.address, percentage: 50 },
-    { tokenAddress: link.address, percentage: 50 },
+    { tokenAddress: uni.address, percentage: 50, amount: 0 },
+    { tokenAddress: link.address, percentage: 50,   amount: 0 },
   ];
   const highRiskAllocations = [
-    { tokenAddress: doge.address, percentage: 25 },
-    { tokenAddress: shib.address, percentage: 25 },
-    { tokenAddress: pepe.address, percentage: 25 },
-    { tokenAddress: floki.address, percentage: 25 },
+    { tokenAddress: doge.address, percentage: 25, amount: 0 },
+    { tokenAddress: shib.address, percentage: 25, amount: 0 },
+    { tokenAddress: pepe.address, percentage: 25, amount: 0 },
+    { tokenAddress: floki.address, percentage: 25, amount: 0 },
   ];
 
   // approve USDT spending for the smart basket contract
