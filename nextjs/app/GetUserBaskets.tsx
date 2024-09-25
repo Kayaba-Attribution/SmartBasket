@@ -6,8 +6,8 @@ import { formatEther } from "ethers";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 
 interface BasketDetails {
-  index: number;
   tokenAddresses: string[];
+  tokenPercentages: number[];
   tokenAmounts: bigint[];
   tokenValues: bigint[];
   totalValue: bigint;
@@ -32,8 +32,8 @@ const GetUserBaskets: React.FC = () => {
 
   useEffect(() => {
     if (refreshBaskets) {
-      refetch(); // Re-fetch the basket data
-      setRefreshBaskets(false); // Reset the refresh flag
+      refetch();
+      setRefreshBaskets(false);
     }
   }, [refreshBaskets, refetch, setRefreshBaskets]);
 
@@ -59,18 +59,20 @@ const GetUserBaskets: React.FC = () => {
 
   useEffect(() => {
     if (basketCount > 0 && assetDetailsResults.data && totalValueResults.data) {
+      console.log("Asset Details Results:", assetDetailsResults.data);
       const details: BasketDetails[] = assetDetailsResults.data.map((assetDetail, index) => {
-        const [tokenAddresses, tokenAmounts, tokenValues] = assetDetail.result as [string[], bigint[], bigint[]];
+        const [tokenAddresses, tokenPercentages, tokenAmounts, tokenValues] = assetDetail.result as [string[], bigint[], bigint[], bigint[]];
         const totalValue = totalValueResults.data[index].result as bigint;
 
         return {
-          index,
           tokenAddresses,
+          tokenPercentages: tokenPercentages.map(p => Number(p)), // Convert bigint to number
           tokenAmounts,
           tokenValues,
           totalValue,
         };
       });
+      console.log("Processed Basket Details:", details);
       setBasketDetails(details);
     }
   }, [basketCount, assetDetailsResults.data, totalValueResults.data]);
@@ -84,16 +86,22 @@ const GetUserBaskets: React.FC = () => {
     return formatted === "-0.00" ? "0.00" : formatted;
   };
 
+  const tokenOptions = Object.entries(addresses.tokens).map(([name, address]) => ({ name, address }));
+
+  const getTokenName = (address: string) => {
+    const token = tokenOptions.find(t => t.address === address);
+    return token ? token.name : "Unknown";
+  };
+
   return (
     <div className="overflow-x-auto">
       <div className="flex justify-evenly">
         <h2 className="text-2xl font-semibold mb-4">Your Baskets</h2>
-        <h2 className="text-2xl font-semibold mb-4" >[ {basketCount} ]</h2>
+        <h2 className="text-2xl font-semibold mb-4">[ {basketCount} ]</h2>
       </div>
       <table className="table w-full">
         <thead>
           <tr>
-            <th>Basket Index</th>
             <th>Tokens</th>
             <th>Amounts</th>
             <th>Values (USDT)</th>
@@ -101,14 +109,13 @@ const GetUserBaskets: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {basketDetails.map(basket => (
-            <tr key={basket.index}>
-              <td>{basket.index}</td>
+          {basketDetails.map((basket, basketIndex) => (
+            <tr key={basketIndex}>
               <td>
                 <ul>
                   {basket.tokenAddresses.map((address, i) => (
                     <li key={i}>
-                      {address.slice(0, 6)}...{address.slice(-4)}
+                      ({basket.tokenPercentages[i]}%) - {getTokenName(address)} 
                     </li>
                   ))}
                 </ul>

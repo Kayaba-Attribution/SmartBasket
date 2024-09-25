@@ -19,12 +19,12 @@ const Home: React.FC = () => {
   return (
     <BasketProvider>
       <div className="flex flex-col min-h-screen">
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold text-center mb-8">Smart Basket Portfolio Manager</h1>
+        <main className="flex-grow container mx-auto px-4 py-8 ">
+          <h1 className="text-4xl font-bold text-center mb-8 glow">Smart Basket Portfolio Manager</h1>
 
           {connectedAddress ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <section className="col-span-1 md:col-span-2">
+              <section className="col-span-1 md:col-span-2 glow">
                 <div className="bg-base-200 rounded-lg p-6 shadow-lg flex justify-between">
                   <div>
                     <h2 className="text-2xl font-semibold mb-4">Your Account</h2>
@@ -51,27 +51,27 @@ const Home: React.FC = () => {
                 </div>
               </section>
 
-              <section>
+              <section className="glow">
                 <div className="bg-base-200 rounded-lg p-6 shadow-lg h-full">
                   <h2 className="text-2xl font-semibold mb-4">Create Basket</h2>
                   <CreateBasket />
                 </div>
               </section>
 
-              <section>
+              <section className="glow">
                 <div className="bg-base-200 rounded-lg p-6 shadow-lg h-full">
                   <GetUserBaskets />
                 </div>
               </section>
 
-              <section>
+              <section className="glow">
                 <div className="bg-base-300 rounded-lg p-6 shadow-lg h-full">
                   <h2 className="text-2xl font-semibold mb-4">Sell Basket</h2>
                   <SellBasket />
                 </div>
               </section>
 
-              <section>
+              <section className="glow">
                 <div className="bg-base-300 rounded-lg p-6 shadow-lg h-full">
                   <h2 className="text-2xl font-semibold mb-4">Basket Details</h2>
                   <p className="text-gray-500">Feature coming soon...</p>

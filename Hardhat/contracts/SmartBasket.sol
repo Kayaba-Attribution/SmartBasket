@@ -38,16 +38,23 @@ contract SmartBasket is Ownable {
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
         usdtToken = IERC20(_usdtAddress);
     }
-    
-    function createBasket(TokenAllocation[] memory _allocations, uint256 _usdtAmount) external {
-        require(_allocations.length > 0 && _allocations.length <= 5, "Invalid number of tokens");
+
+    function createBasket(
+        TokenAllocation[] memory _allocations,
+        uint256 _usdtAmount
+    ) external {
+        require(
+            _allocations.length > 0 && _allocations.length <= 5,
+            "Invalid number of tokens"
+        );
         require(_usdtAmount > 0, "Must send USDT");
 
         uint256 totalPercentage = 0;
         Basket storage newBasket = userBaskets[msg.sender].push();
 
         for (uint i = 0; i < _allocations.length; i++) {
-            newBasket.allocations[i].tokenAddress = _allocations[i].tokenAddress;
+            newBasket.allocations[i].tokenAddress = _allocations[i]
+                .tokenAddress;
             newBasket.allocations[i].percentage = _allocations[i].percentage;
             totalPercentage += _allocations[i].percentage;
         }
@@ -57,11 +64,19 @@ contract SmartBasket is Ownable {
         newBasket.tokenCount = _allocations.length;
         newBasket.investmentValue = _usdtAmount;
 
-        bool success = usdtToken.transferFrom(msg.sender, address(this), _usdtAmount);
+        bool success = usdtToken.transferFrom(
+            msg.sender,
+            address(this),
+            _usdtAmount
+        );
         require(success, "Failed to transfer USDT");
         _investInBasket(newBasket, _usdtAmount);
 
-        emit BasketCreated(msg.sender, userBaskets[msg.sender].length - 1, _usdtAmount);
+        emit BasketCreated(
+            msg.sender,
+            userBaskets[msg.sender].length - 1,
+            _usdtAmount
+        );
     }
     function sellBasket(uint256 basketIndex) external {
         require(
@@ -95,11 +110,17 @@ contract SmartBasket is Ownable {
         emit BasketSold(msg.sender, basketIndex, usdtReturned);
     }
 
-    function _investInBasket(Basket storage basket, uint256 usdtAmount) internal {
+    function _investInBasket(
+        Basket storage basket,
+        uint256 usdtAmount
+    ) internal {
         for (uint i = 0; i < basket.tokenCount; i++) {
             TokenAllocation storage allocation = basket.allocations[i];
             uint256 usdtForToken = (usdtAmount * allocation.percentage) / 100;
-            uint256 tokensBought = _swapUsdtForTokens(allocation.tokenAddress, usdtForToken);
+            uint256 tokensBought = _swapUsdtForTokens(
+                allocation.tokenAddress,
+                usdtForToken
+            );
             allocation.amount = tokensBought; // Store the amount of tokens bought
         }
     }
@@ -175,18 +196,25 @@ contract SmartBasket is Ownable {
     )
         public
         view
-        returns (address[] memory, uint256[] memory, uint256[] memory)
+        returns (
+            address[] memory,
+            uint256[] memory,
+            uint256[] memory,
+            uint256[] memory
+        )
     {
         require(basketIndex < userBaskets[user].length, "Invalid basket index");
         Basket storage basket = userBaskets[user][basketIndex];
 
         address[] memory tokenAddresses = new address[](basket.tokenCount);
+        uint256[] memory tokenPercentages = new uint256[](basket.tokenCount);
         uint256[] memory tokenAmounts = new uint256[](basket.tokenCount);
         uint256[] memory tokenValues = new uint256[](basket.tokenCount);
 
         for (uint i = 0; i < basket.tokenCount; i++) {
             TokenAllocation storage allocation = basket.allocations[i];
             tokenAddresses[i] = allocation.tokenAddress;
+            tokenPercentages[i] = allocation.percentage;
             tokenAmounts[i] = allocation.amount;
             tokenValues[i] = getEstimatedUsdtValue(
                 allocation.tokenAddress,
@@ -194,7 +222,7 @@ contract SmartBasket is Ownable {
             );
         }
 
-        return (tokenAddresses, tokenAmounts, tokenValues);
+        return (tokenAddresses, tokenPercentages, tokenAmounts, tokenValues);
     }
 
     function getEstimatedUsdtValue(
