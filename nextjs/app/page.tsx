@@ -1,103 +1,124 @@
 "use client";
 
-// React/Next.js
 import React from "react";
 import Link from "next/link";
 import addresses from "../../Hardhat/addresses.json";
-// Custom components
+import CreateBasket from "./CreateBasket";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
-import type { NextPage } from "next";
-// Web3
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 
-const Home: NextPage = () => {
-  return <HomeContent />;
-};
-
-const HomeContent: React.FC = () => {
+const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
   const contractAddress = addresses.core.SmartBasket;
 
   return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-4">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Lottery Game Encode - Group 1</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
-            <p className="my-2 font-medium">Connected Address:</p>
-            {connectedAddress && <Address address={connectedAddress} />}
-          </div>
-        </div>
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center mb-8">Smart Basket Portfolio Manager</h1>
 
-        {contractAddress && (
-          <div className="mt-8 py-4 bg-base-200 rounded-lg">
-            <div className="text-center max-w-2xl mx-auto my-4 p-2 bg-base-300 rounded-lg shadow-md">
-              <h2 className="text-2xl font-bold mb-4">Current Smart Basket </h2>
-              <div className="bg-base-100 rounded-md overflow-hidden">
-                <p className="font-mono text-sm break-all">{contractAddress}</p>
+        {connectedAddress ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <section className="col-span-1 md:col-span-2">
+              <div className="bg-base-200 rounded-lg p-6 shadow-lg flex justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold mb-4">Your Account</h2>
+                  <p className="mb-2">
+                    Connected Address: <Address address={connectedAddress} />
+                  </p>
+                  <p>
+                    Smart Basket Contract: <Address address={contractAddress} />
+                  </p>
+                </div>
+                <div>
+                  <div className="mt-4 md:mt-0">
+                    <h3 className="text-xl font-semibold mb-2">Core Contracts</h3>
+                    <ul className="space-y-2">
+                      {Object.entries(addresses.core).map(([name, address]) => (
+                        <li key={name} className="flex flex-col">
+                          <span className="font-medium">{name}:</span>
+                          <Address address={address} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section>
+              <div className="bg-base-200 rounded-lg p-6 shadow-lg h-full">
+                <h2 className="text-2xl font-semibold mb-4">Create Basket</h2>
+                <CreateBasket />
+              </div>
+            </section>
+
+            <section>
+              <div className="bg-base-200 rounded-lg p-6 shadow-lg h-full">
+                <h2 className="text-2xl font-semibold mb-4">Your Baskets</h2>
+                <GetUserBaskets />
+              </div>
+            </section>
+
+            <section>
+              <div className="bg-base-300 rounded-lg p-6 shadow-lg h-full">
+                <h2 className="text-2xl font-semibold mb-4">Sell Basket</h2>
+                <p className="text-gray-500">Feature coming soon...</p>
+              </div>
+            </section>
+
+            <section>
+              <div className="bg-base-300 rounded-lg p-6 shadow-lg h-full">
+                <h2 className="text-2xl font-semibold mb-4">Basket Details</h2>
+                <p className="text-gray-500">Feature coming soon...</p>
+              </div>
+            </section>
+
+            <section className="col-span-1 md:col-span-2">
+              <div className="bg-base-200 rounded-lg p-6 shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4">Your Token Balances</h2>
+                <div className="overflow-x-auto">
+                  <table className="table w-full">
+                    <thead>
+                      <tr>
+                        <th>Token</th>
+                        <th>Address</th>
+                        <th>Balance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(addresses.tokens).map(([name, address]) => (
+                        <tr key={name}>
+                          <td>{name}</td>
+                          <td>
+                            <Address address={address} />
+                          </td>
+                          <td>
+                            <GetTokenBalance
+                              contractAddress={address as `0x${string}`}
+                              userAddress={connectedAddress as `0x${string}`}
+                              contractName={name}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <div className="text-center">
+            <p className="text-xl mb-4">Please connect your wallet to use Smart Basket.</p>
           </div>
         )}
+      </main>
 
-        <PageBody />
-
-        {connectedAddress && (
-          <div className="mt-8 p-4 bg-base-200 rounded-lg">
-            <div className="mt-8 p-4 bg-base-200 rounded-lg">
-              <GetUserBaskets />
-            </div>
-            <h2 className="text-2xl font-bold mb-4">Deployed Contracts and Balances</h2>
-            <div className="overflow-x-auto">
-              <table className="table w-full">
-                <thead>
-                  <tr>
-                    <th>Contract Name</th>
-                    <th>Address</th>
-                    <th>Balance/Other</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(addresses.core).map(([name, address]) => (
-                    <tr key={name}>
-                      <td>{name}</td>
-                      <td>
-                        <Address address={address} />
-                      </td>
-                      <td>Core</td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td colSpan={3} className="border-t border-base-300"></td>
-                  </tr>
-                  {Object.entries(addresses.tokens).map(([name, address]) => (
-                    <tr key={name}>
-                      <td>{name}</td>
-                      <td>
-                        <Address address={address} />
-                      </td>
-                      <td>
-                        <GetTokenBalance
-                          contractAddress={address as `0x${string}`}
-                          userAddress={connectedAddress as `0x${string}`}
-                          contractName={name}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
+      <footer className="bg-base-300 py-8 mt-auto">
+        <div className="container mx-auto px-4">
           <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
             <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
               <BugAntIcon className="h-8 w-8 fill-secondary" />
@@ -121,16 +142,8 @@ const HomeContent: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </>
-  );
-};
-
-const PageBody: React.FC = () => {
-  return (
-    <>
-      <p className="text-center text-lg">Start by getting some Sepolia ETH through Faucet!</p>
-    </>
+      </footer>
+    </div>
   );
 };
 
