@@ -95,9 +95,9 @@ const GetUserBaskets: React.FC = () => {
 
   return (
     <div className="overflow-x-auto">
-      <div className="flex justify-evenly">
-        <h2 className="text-2xl font-semibold mb-4">Your Baskets</h2>
-        <h2 className="text-2xl font-semibold mb-4">[ {basketCount} ]</h2>
+      <div className="flex">
+        <h2 className="text-2xl font-semibold mb-4">Your Baskets </h2>
+        <div className="ml-4 badge badge-lg">Total: {basketCount}</div>
       </div>
       <table className="table w-full">
         <thead>
