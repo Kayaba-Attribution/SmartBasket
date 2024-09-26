@@ -8,13 +8,13 @@
       - input for amount in usdt ✅
       - button to call the createBasket with hardcoded allocations ✅
    - extra (should be done):
-      - choose the type of assets and the percentages
-      - max 5 tokens, % must sum to 100
-      - dropdown menu? pre-made risk basket (might be easier at first)
+      - choose the type of assets and the percentages ✅
+      - max 5 tokens, % must sum to 100 ✅
+      - dropdown menu? pre-made risk basket (might be easier at first) ✅
 - **Sell basket**
-   - create component
-      - index of basket to sell
-      - check user usdt has gotten up
+   - create component ✅
+      - index of basket to sell ✅
+      - check user usdt has gotten up ✅
    - extra (only if time permits):
       - modify contract to sell only a % of the basket ie: 25%
       - modify to be able to sell x amount of usdt
@@ -25,7 +25,7 @@
    - showcase the results ✅
    - save all, show all porfolio total balance and refresh on create
 - **Others**
-   - improve UI
+   - improve UI ✅
    - deploy on testnet
 
 ## Overview
