@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { Contract, ContractFactory, parseEther, Signer } from "ethers";
 import { parseUnits } from "ethers";
+import yargs from "yargs";
 
 // Import artifacts
 import WETH9 from "../WETH9.json";
@@ -24,41 +25,91 @@ interface TokenInfo {
 
 const MaxUint256 = ethers.MaxUint256;
 
+// Function to read addresses from file
+function readAddresses(): any {
+  try {
+    return JSON.parse(fs.readFileSync('addresses.json', 'utf8'));
+  } catch (error) {
+    return { core: {}, tokens: {} };
+  }
+}
+
+// Function to write addresses to file
+function writeAddresses(addresses: any) {
+  fs.writeFileSync('addresses.json', JSON.stringify(addresses, null, 2));
+}
+
+function checkCoreAddresses() {
+  const addresses = readAddresses();
+  if (!addresses.core.Factory || !addresses.core.WETH || !addresses.core.Router) {
+    console.error("Core contracts not deployed. Run with DEPLOY_CORE=true");
+    process.exit(1);
+  }
+}
+
+function checkTokenAddresses() {
+  const addresses = readAddresses();
+  if (!addresses.tokens.USDT || !addresses.tokens.ETH || !addresses.tokens.WBTC || !addresses.tokens.XRP || !addresses.tokens.UNI || !addresses.tokens.LINK || !addresses.tokens.DOGE || !addresses.tokens.SHIB || !addresses.tokens.PEPE || !addresses.tokens.FLOKI) {
+    console.error("Tokens not deployed. Run with DEPLOY_TOKENS=true");
+    process.exit(1);
+  }
+}
+
 // Deploy core contracts (Factory, Router, WETH)
-async function deployCore(owner: Signer): Promise<DeployedCore> {
-  const Factory = new ContractFactory(
-    factoryArtifact.abi,
-    factoryArtifact.bytecode,
-    owner
-  );
-  const factory = await Factory.deploy(await owner.getAddress());
-  const factoryAddress = await factory.getAddress();
-  console.log(`Factory deployed to ${factoryAddress}`);
+async function deployCore(owner: Signer, addresses: any): Promise<DeployedCore> {
+  if (!addresses.core.Factory) {
+    const Factory = new ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, owner);
+    const factory = await Factory.deploy(await owner.getAddress());
+    addresses.core.Factory = await factory.getAddress();
+    writeAddresses(addresses);
+    console.log(`Factory deployed to ${addresses.core.Factory}`);
+  } else {
+    console.log(`Using existing Factory at ${addresses.core.Factory}`);
+  }
 
-  const WETH = new ContractFactory(WETH9.abi, WETH9.bytecode, owner);
-  const weth = await WETH.deploy();
-  const wethAddress = await weth.getAddress();
-  console.log(`WETH deployed to ${wethAddress}`);
+  if (!addresses.core.WETH) {
+    const WETH = new ContractFactory(WETH9.abi, WETH9.bytecode, owner);
+    const weth = await WETH.deploy();
+    addresses.core.WETH = await weth.getAddress();
+    writeAddresses(addresses);
+    console.log(`WETH deployed to ${addresses.core.WETH}`);
+  } else {
+    console.log(`Using existing WETH at ${addresses.core.WETH}`);
+  }
 
-  const Router = new ContractFactory(
-    routerArtifact.abi,
-    routerArtifact.bytecode,
-    owner
-  );
-  const router = await Router.deploy(factoryAddress, wethAddress);
-  console.log(`Router deployed to ${await router.getAddress()}`);
+  if (!addresses.core.Router) {
+    const Router = new ContractFactory(routerArtifact.abi, routerArtifact.bytecode, owner);
+    const router = await Router.deploy(addresses.core.Factory, addresses.core.WETH);
+    addresses.core.Router = await router.getAddress();
+    writeAddresses(addresses);
+    console.log(`Router deployed to ${addresses.core.Router}`);
+  } else {
+    console.log(`Using existing Router at ${addresses.core.Router}`);
+  }
 
-  return { factory, router, weth };
+  return {
+    factory: await ethers.getContractAt(factoryArtifact.abi, addresses.core.Factory),
+    router: await ethers.getContractAt(routerArtifact.abi, addresses.core.Router),
+    weth: await ethers.getContractAt(WETH9.abi, addresses.core.WETH)
+  };
 }
 
 // Deploy a new ERC20 token based on ERC20_BASE
-async function deployToken(owner: Signer, name: string, symbol: string): Promise<TokenInfo> {
-  const ERC20_BASE = await ethers.getContractFactory("ERC20_BASE");
-  const token = await ERC20_BASE.deploy(name, symbol);
-  const tokenAddress = await token.getAddress();
-  console.log(`${name} deployed to ${tokenAddress}`);
+async function deployToken(owner: Signer, name: string, symbol: string, addresses: any): Promise<TokenInfo> {
+  if (!addresses.tokens[symbol]) {
+    const ERC20_BASE = await ethers.getContractFactory("ERC20_BASE");
+    const token = await ERC20_BASE.deploy(name, symbol);
+    addresses.tokens[symbol] = await token.getAddress();
+    writeAddresses(addresses);
+    console.log(`${name} deployed to ${addresses.tokens[symbol]}`);
+  } else {
+    console.log(`Using existing ${symbol} at ${addresses.tokens[symbol]}`);
+  }
 
-  return { contract: token, address: tokenAddress };
+  return {
+    contract: await ethers.getContractAt("ERC20_BASE", addresses.tokens[symbol]),
+    address: addresses.tokens[symbol]
+  };
 }
 
 // Mint tokens, create pair, approve, and add liquidity
@@ -110,129 +161,88 @@ async function setupTokenPair(
   console.log(`Liquidity added for ${await token.symbol()} / USDT pair | Target price: ${targetPriceUSD}`);
 }
 
-async function deploySmartBasket(owner: Signer, router: any, usdt: any) {
-  const SmartBasket = await ethers.getContractFactory("SmartBasket");
-  const customBasket = await SmartBasket.deploy(router, usdt);
+async function deploySmartBasket(owner: Signer, router: any, usdt: any, addresses: any) {
+  if (!addresses.core.SmartBasket) {
+    console.log(`Deploying SmartBasket with Router: ${router} and USDT: ${usdt}`);
+    const SmartBasket = await ethers.getContractFactory("SmartBasket");
+    const customBasket = await SmartBasket.deploy(router, usdt);
+    addresses.core.SmartBasket = await customBasket.getAddress();
+    writeAddresses(addresses);
+    console.log(`SmartBasket deployed to ${addresses.core.SmartBasket}`);
+  } else {
+    console.log(`Using existing SmartBasket at ${addresses.core.SmartBasket}`);
+  }
 
-  return customBasket;
+  return await ethers.getContractAt("SmartBasket", addresses.core.SmartBasket);
 }
-
 
 async function main() {
-  const [owner, user1, user2, user3] = await ethers.getSigners();
+  const deployCoreFlag = process.env.DEPLOY_CORE === 'true';
+  const deployTokens = process.env.DEPLOY_TOKENS === 'true';
+  const setupPairs = process.env.SETUP_PAIRS === 'true';
+  const deployBasket = process.env.DEPLOY_BASKET === 'true';
+  const deployAll = process.env.DEPLOY_ALL === 'true';
+
+  const [owner] = await ethers.getSigners();
   console.log(`Deploying contracts with the account: ${owner.address}`);
 
-  // Deploy core contracts
-  const core = await deployCore(owner);
+  const balanceBefore = await ethers.provider.getBalance(owner.address);
+  let addresses = readAddresses();
 
-  // Deploy USDT
-  const usdt = await deployToken(owner, "Tether USD", "USDT");
+  if (deployCoreFlag || deployAll) {
+    console.log("Deploying core contracts...");
+    const core = await deployCore(owner, addresses);
+  }
 
-  // Low Risk ETF Tokens
-  console.log("Deploying and setting up Low Risk ETF tokens...");
-  const eth = await deployToken(owner, "Ethereum", "ETH");
-  const wbtc = await deployToken(owner, "Wrapped Bitcoin", "WBTC");
-  const xrp = await deployToken(owner, "Ripple", "XRP");
+  if (deployTokens || deployAll) {
+    console.log("Deploying tokens...");
+    checkCoreAddresses();
+    const usdt = await deployToken(owner, "Tether USD", "USDT", addresses);
+    const eth = await deployToken(owner, "Ethereum", "ETH", addresses);
+    const wbtc = await deployToken(owner, "Wrapped Bitcoin", "WBTC", addresses);
+    const xrp = await deployToken(owner, "Ripple", "XRP", addresses);
+    const uni = await deployToken(owner, "Uniswap", "UNI", addresses);
+    const link = await deployToken(owner, "Chainlink", "LINK", addresses);
+    const doge = await deployToken(owner, "Dogecoin", "DOGE", addresses);
+    const shib = await deployToken(owner, "Shiba Inu", "SHIB", addresses);
+    const pepe = await deployToken(owner, "Pepe", "PEPE", addresses);
+    const floki = await deployToken(owner, "Floki Inu", "FLOKI", addresses);
+  }
 
-  await setupTokenPair(owner, core.factory, core.router, eth.contract, usdt.contract, 2000);
-  await setupTokenPair(owner, core.factory, core.router, wbtc.contract, usdt.contract, 60000);
-  await setupTokenPair(owner, core.factory, core.router, xrp.contract, usdt.contract, 0.5);
+  if (setupPairs || deployAll) {
+    console.log("Setting up token pairs...");
+    checkCoreAddresses();
+    checkTokenAddresses();
+    const core = {
+      factory: await ethers.getContractAt(factoryArtifact.abi, addresses.core.Factory),
+      router: await ethers.getContractAt(routerArtifact.abi, addresses.core.Router),
+    };
+    const usdt = await ethers.getContractAt("ERC20_BASE", addresses.tokens.USDT);
 
-  // Medium Risk ETF Tokens
-  console.log("Deploying and setting up Medium Risk ETF tokens...");
-  // ETH is already deployed
-  const uni = await deployToken(owner, "Uniswap", "UNI");
-  const link = await deployToken(owner, "Chainlink", "LINK");
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.ETH), usdt, 2000);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.WBTC), usdt, 60000);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.XRP), usdt, 0.5);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.UNI), usdt, 5);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.LINK), usdt, 15);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.DOGE), usdt, 0.1);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.SHIB), usdt, 0.000008);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.PEPE), usdt, 0.000001);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.FLOKI), usdt, 0.00002);
+  }
 
-  await setupTokenPair(owner, core.factory, core.router, uni.contract, usdt.contract, 5);
-  await setupTokenPair(owner, core.factory, core.router, link.contract, usdt.contract, 15);
-
-  // High Risk ETF Tokens
-  console.log("Deploying and setting up High Risk ETF tokens...");
-  const doge = await deployToken(owner, "Dogecoin", "DOGE");
-  const shib = await deployToken(owner, "Shiba Inu", "SHIB");
-  const pepe = await deployToken(owner, "Pepe", "PEPE");
-  const floki = await deployToken(owner, "Floki Inu", "FLOKI");
-
-  await setupTokenPair(owner, core.factory, core.router, doge.contract, usdt.contract, 0.1);
-  await setupTokenPair(owner, core.factory, core.router, shib.contract, usdt.contract, 0.000008);
-  await setupTokenPair(owner, core.factory, core.router, pepe.contract, usdt.contract, 0.000001);
-  await setupTokenPair(owner, core.factory, core.router, floki.contract, usdt.contract, 0.00002);
-
-  // Deploy SmartBasket contract
-  const SmartBasket = await deploySmartBasket(owner, core.router, usdt.address);
-  const smartBasketAddress = await SmartBasket.getAddress();
-  console.log(`SmartBasket deployed to ${smartBasketAddress}`);
-
-  // Deploy dummy baskets for testing
-  const lowRiskAllocations = [
-    { tokenAddress: eth.address, percentage: 60, amount: 0 }, 
-    { tokenAddress: wbtc.address, percentage: 20, amount: 0 },
-    { tokenAddress: xrp.address, percentage: 20, amount: 0 },
-  ];
-  const mediumRiskAllocations = [
-    { tokenAddress: uni.address, percentage: 50, amount: 0 },
-    { tokenAddress: link.address, percentage: 50,   amount: 0 },
-  ];
-  const highRiskAllocations = [
-    { tokenAddress: doge.address, percentage: 25, amount: 0 },
-    { tokenAddress: shib.address, percentage: 25, amount: 0 },
-    { tokenAddress: pepe.address, percentage: 25, amount: 0 },
-    { tokenAddress: floki.address, percentage: 25, amount: 0 },
-  ];
-
-  // approve USDT spending for the smart basket contract
-  await usdt.contract.approve(smartBasketAddress, MaxUint256);
-
-  // Create baskets
-  await SmartBasket.createBasket(lowRiskAllocations, parseEther("10000"));
-  await SmartBasket.createBasket(mediumRiskAllocations, parseEther("1000"));
-  await SmartBasket.createBasket(highRiskAllocations, parseEther("100"));
-
-  // Verify baskets created
-  const userBaskets = await SmartBasket.getUserBaskets(await owner.getAddress());
-  console.log("User baskets:", userBaskets.length);
-
-  console.log("Deployment and setup completed");
-
-  // Log addresses for reference
-  console.log("Deployed Token Addresses:");
-  console.log("USDT:", usdt.address);
-  console.log("ETH:", eth.address);
-  console.log("WBTC:", wbtc.address);
-  console.log("XRP:", xrp.address);
-  console.log("UNI:", uni.address);
-  console.log("LINK:", link.address);
-  console.log("DOGE:", doge.address);
-  console.log("SHIB:", shib.address);
-  console.log("PEPE:", pepe.address);
-  console.log("FLOKI:", floki.address);
-
-
-  const addresses = {
-    // Core contracts
-    core: {
-      Factory: await core.factory.getAddress(),
-      Router: await core.router.getAddress(),
-      WETH: await core.weth.getAddress(),
-      SmartBasket: smartBasketAddress
-    },
-    // Tokens
-    tokens: {
-      USDT: usdt.address,
-      ETH: eth.address,
-      WBTC: wbtc.address,
-      XRP: xrp.address,
-      UNI: uni.address,
-      LINK: link.address,
-      DOGE: doge.address,
-      SHIB: shib.address,
-      PEPE: pepe.address,
-      FLOKI: floki.address
+  if (deployBasket || deployAll) {
+    console.log("Deploying SmartBasket...");
+    if (!addresses.core.Router || !addresses.tokens.USDT) {
+      console.error("Router or USDT address not found. Make sure to deploy core contracts and tokens first.");
+      return;
     }
-  };
-  fs.writeFileSync('addresses.json', JSON.stringify(addresses));
+    const SmartBasket = await deploySmartBasket(owner, addresses.core.Router, addresses.tokens.USDT, addresses);
+  }
+
+  const balanceAfter = await ethers.provider.getBalance(owner.address);
+  console.log(`Deployer ETH Balance Change: ${ethers.formatEther(balanceAfter - balanceBefore)}`);
 }
+
 
 // Run the deployment
 main()

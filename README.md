@@ -90,7 +90,18 @@ The test suite covers various scenarios including:
 2. `cd Hardhat` and install dependencies: `npm install`
 3. Compile `npx hardhat compile`
 4. Start Node `npx hardhat node`
-5. Deploy contracts: `npx hardhat run scripts/deploy.ts --network localhost`
+5. Deploy contracts: `DEPLOY_ALL=true npx hardhat run scripts/deploy.ts --network localhost`
+   - __It is possible to deploy by parts as follows:__
+   - DEPLOY_CORE: 
+      - `DEPLOY_CORE=true npx hardhat run scripts/deploy.ts --network localhost`
+   - DEPLOY_TOKENS:
+      - `DEPLOY_TOKENS=true npx hardhat run scripts/deploy.ts --network localhost`
+   - SETUP_PAIRS:
+      - `SETUP_PAIRS=true npx hardhat run scripts/deploy.ts --network localhost`
+   - DEPLOY_BASKET:
+      - `DEPLOY_BASKET=true npx hardhat run scripts/deploy.ts --network localhost`
+   - DEPLOY_ALL: 
+      - `DEPLOY_ALL=true npx hardhat run scripts/deploy.ts --network localhost`
 6. Run tests: `npx hardhat test --network localhost`
 
 ## Setup and Deployment for Hardhat
