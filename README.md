@@ -1,90 +1,79 @@
-# SmartBasket: Customizable Token Portfolio Manager
+# SmartBasket: Customizable Token Portfolio Manager on Neo X
 
-### Things to do for an MVP:
+## Hackathon Submission for Neo X Code Grinder Challenge
 
-- **Create basket**
-   - check allowance of usdt of the user to the basket contract ✅
-   - create component ✅
-      - input for amount in usdt ✅
-      - button to call the createBasket with hardcoded allocations ✅
-   - extra (should be done):
-      - choose the type of assets and the percentages ✅
-      - max 5 tokens, % must sum to 100 ✅
-      - dropdown menu? pre-made risk basket (might be easier at first) ✅
-- **Sell basket**
-   - create component ✅
-      - index of basket to sell ✅
-      - check user usdt has gotten up ✅
-   - extra (only if time permits):
-      - modify contract to sell only a % of the basket ie: 25%
-      - modify to be able to sell x amount of usdt
-- **View functions**
-   - use getUserBaskets to get all the users baskets (user) ✅
-   - use getBasketAssetDetails (user, index) to get basket details ✅
-   - use getBasketTotalValue (user, index) to get usdt value of basket ✅
-   - showcase the results ✅
-   - save all, show all porfolio total balance and refresh on create
-- **Others**
-   - improve UI ✅
-   - deploy on testnet
+SmartBasket is an innovative DeFi project built on Neo X, leveraging the power of Neo's EVM-compatible sidechain to create a seamless and efficient token portfolio management experience. This project showcases the capabilities of Neo X in fostering an open, diverse ecosystem where developers can thrive in driving progress towards the Smart Economy.
 
-## Overview
+### Project Overview
 
-SmartBasket is a Solidity-based smart contract system that allows users to create and manage customizable token portfolios (baskets) using USDT as the base currency. The project utilizes Uniswap V2 for token swaps and liquidity provision.
+SmartBasket is a Solidity-based smart contract system that allows users to create and manage customizable token portfolios (baskets) using USDT as the base currency. The project implements a complete Uniswap V2 fork for token swaps and liquidity provision, demonstrating the full compatibility of Neo X with Ethereum tooling and complex DeFi infrastructure.
 
-## Key Components
+### Integration with Neo X
+
+- The project leverages Neo X's EVM compatibility to deploy and interact with complex Solidity contracts
+- Utilizes Neo X's high throughput for efficient token swaps and basket management
+- Benefits from Neo X's dBFT consensus for secure and quick transaction finality
+- Takes advantage of Neo X's MEV resistance for fair token pricing in Uniswap pools
+
+### Key Components
 
 1. **SmartBasket Contract**: The main contract that handles basket creation, management, and liquidation.
 2. **ERC20 Tokens**: Various ERC20 tokens representing different cryptocurrencies and risk levels.
-3. **Uniswap V2**: Used for token swaps and liquidity provision.
+3. **Uniswap V2 Fork**: A complete implementation of Uniswap V2 core and periphery contracts, deployed on Neo X.
 
-## Features
+### Key Features
 
 - Create customized token baskets with up to 5 different tokens
 - Invest in baskets using USDT
 - Sell baskets and receive USDT
 - View basket total value and individual asset details
+- Seamless integration with Neo X's high-performance EVM-based sidechain
+- Leverages Neo X's dBFT consensus for enhanced security and one-block finality
+- Toxic MEV resistant, ensuring a fairer environment for all DeFi participants
+- Full Uniswap V2 functionality for efficient token swaps and liquidity provision
 
-## Project Structure
+### Technical Implementation
 
 1. **Smart Contracts**:
    - `SmartBasket.sol`: Main contract for basket management
    - `ERC20_BASE.sol`: Base ERC20 token implementation
+   - Uniswap V2 Core Contracts:
+     - `UniswapV2Factory.sol`: Creates and manages Uniswap pairs
+     - `UniswapV2Pair.sol`: Implements the core swap and liquidity logic
+   - Uniswap V2 Periphery Contracts:
+     - `UniswapV2Router02.sol`: Handles routing for multi-hop swaps and provides a user-friendly interface
 
 2. **Deployment Scripts**:
-   - `deploy.ts`: Deploys core contracts, tokens, and sets up liquidity pairs
+   - `deploy.ts`: A comprehensive script that handles the deployment of:
+     - Uniswap V2 core contracts (Factory, Pair)
+     - Uniswap V2 periphery contracts (Router)
+     - USDT and other ERC20 tokens
+     - Creation of Uniswap pairs and addition of initial liquidity
+     - SmartBasket contract
 
-3. **Test Suite**:
-   - `SmartBasket.test.ts`: Comprehensive tests for the SmartBasket contract
-
-## Workflow
+### Workflow
 
 1. **Deployment**:
-   - Deploy Uniswap V2 core contracts (Factory, Router, WETH)
-   - Deploy USDT and other ERC20 tokens
+   - Deploy Uniswap V2 core contracts (Factory, Pair templates)
+   - Deploy Uniswap V2 periphery contracts (Router)
+   - Deploy WNEO, USDT, and other ERC20 tokens
    - Create Uniswap pairs and add initial liquidity
+   - Deploy SmartBasket contract
 
 2. **Basket Creation**:
    - User approves USDT spending for the SmartBasket contract
    - User calls `createBasket` with token allocations and USDT amount
-   - Contract swaps USDT for specified tokens using Uniswap
+   - SmartBasket contract interacts with Uniswap Router to swap USDT for specified tokens
 
 3. **Basket Management**:
    - Users can view basket details using `getBasketTotalValue` and `getBasketAssetDetails`
+   - These functions interact with Uniswap pairs to get current token prices
 
 4. **Basket Liquidation**:
    - User calls `sellBasket` to liquidate a basket
-   - Contract swaps all tokens back to USDT using Uniswap and returns USDT to the user
+   - SmartBasket contract interacts with Uniswap Router to swap all tokens back to USDT and returns USDT to the user
 
-## Testing
-
-The test suite covers various scenarios including:
-- Basket creation and liquidation
-- Invalid input handling
-- Multi-basket management
-- Value and asset detail retrieval
-
-## Setup and Deployment for Hardhat
+### Setup and Deployment
 
 1. Clone the repository
 2. `cd Hardhat` and install dependencies: `npm install`
@@ -104,7 +93,7 @@ The test suite covers various scenarios including:
       - `DEPLOY_ALL=true npx hardhat run scripts/deploy.ts --network localhost`
 6. Run tests: `npx hardhat test --network localhost`
 
-## Setup and Deployment for Hardhat
+## Setup and Deployment for NextJS
 
 1. `cd nextjs` and install dependencies: `npm install`
 2. Start the project `npm run dev`
@@ -118,3 +107,16 @@ The test suite covers various scenarios including:
 
 - The project uses Hardhat for development and testing
 - Ensure you have sufficient ETH for gas fees when deploying to a testnet or mainnet
+
+### Future Roadmap
+
+1. Integrate with Neo N3 for expanded asset options using cross-chain bridges
+2. Implement advanced portfolio rebalancing strategies using Neo X's unique features
+3. Develop a user-friendly frontend for easy basket management
+4. Explore integration with Neo X's native features for enhanced performance and interoperability
+
+### Conclusion
+
+SmartBasket, with its full Uniswap V2 fork implementation, demonstrates the power and flexibility of Neo X as a platform for complex DeFi applications. By leveraging Neo X's unique features and EVM compatibility, we've created a secure, efficient, and fair token portfolio management system that contributes to the growing ecosystem of the Smart Economy.
+
+We're excited to be part of the Neo X community and look forward to further developing SmartBasket to showcase the full potential of this groundbreaking platform.

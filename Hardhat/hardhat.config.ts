@@ -1,11 +1,11 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import 'dotenv/config'
-import "./tasks/mintTokens"; 
+import "./tasks/mintTokens";
 import "./tasks/createBaskets";
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
 // Validate environment variables
 if (!ALCHEMY_API_KEY) {
@@ -20,15 +20,28 @@ const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {
     hardhat: {},
-    sepolia: ALCHEMY_API_KEY && PRIVATE_KEY
-      ? {
-          url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-          accounts: [PRIVATE_KEY]
-        }
-      : {
-          url: "https://eth-sepolia.g.alchemy.com/v2/your-api-key",
-          accounts: ["0x0000000000000000000000000000000000000000000000000000000000000000"]
-        }
+    sepolia: {
+      url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+      accounts: [PRIVATE_KEY],
+      gasPrice: 1000000000, // 1 gwei
+    },
+    neoX: {
+      url: "https://neoxwish.ngd.network/",
+      chainId: 12227332,
+      accounts: [PRIVATE_KEY],
+    }
+  },
+  etherscan: {
+    customChains: [
+      {
+        network: "neoxTestnet",
+        chainId: 12227332,
+        urls: {
+          apiURL: "https://xt4scan.ngd.network/api",
+          browserURL: "https://xt4scan.ngd.network",
+        },
+      },
+    ],
   },
 };
 

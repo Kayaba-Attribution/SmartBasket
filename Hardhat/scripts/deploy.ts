@@ -196,7 +196,7 @@ async function main() {
 
   if (deployTokens || deployAll) {
     console.log("Deploying tokens...");
-    checkCoreAddresses();
+    // checkCoreAddresses();
     const usdt = await deployToken(owner, "Tether USD", "USDT", addresses);
     const eth = await deployToken(owner, "Ethereum", "ETH", addresses);
     const wbtc = await deployToken(owner, "Wrapped Bitcoin", "WBTC", addresses);
