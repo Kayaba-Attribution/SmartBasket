@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import addresses from "../../Hardhat/addresses.json";
-import SmartBasketABI from "../../Hardhat/artifacts/contracts/SmartBasket.sol/SmartBasket.json";
+import addresses from "../contracts/addresses.json";
+import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
 import { useBasketContext } from "./BasketContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import TokenABI from "../../Hardhat/artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json";
+import React, { useEffect } from "react";
+import TokenABI from "../contracts/artifacts/ERC20_BASE.json";
 import { formatEther } from "ethers";
-import { useReadContract, useAccount } from "wagmi";
+import { RefreshCw } from "lucide-react";
+import { useAccount, useReadContract } from "wagmi";
 
 interface GetTokenBalanceProps {
   contractAddress: `0x${string}`;
@@ -10,7 +11,6 @@ interface GetTokenBalanceProps {
 }
 
 const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, userAddress, contractName }) => {
-  const [shouldFetch, setShouldFetch] = useState(false);
   const { address: connectedAddress } = useAccount();
 
   const {
@@ -23,37 +23,62 @@ const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, user
     abi: TokenABI.abi,
     functionName: "balanceOf",
     args: [userAddress],
-    // enabled: shouldFetch,
   });
 
-  const handleFetchBalance = async () => {
-    setShouldFetch(true);
-    await refetchBalance();
+  useEffect(() => {
+    refetchBalance();
+  }, [contractAddress, userAddress, refetchBalance]);
+
+  const formatBalance = (value: bigint) => {
+    const formatted = parseFloat(formatEther(value)).toFixed(2);
+    return formatted === "-0.00" ? "0.00" : formatted;
   };
 
-  if (!shouldFetch) {
+  const shortenAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  if (isBalanceLoading) {
     return (
-      <button onClick={handleFetchBalance} className="btn btn-xs btn-primary">
-        Fetch Balance
-      </button>
+      <div className="flex items-center space-x-2">
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+        <span>Loading balance...</span>
+      </div>
     );
   }
 
-  if (isBalanceLoading) return <span>Loading...</span>;
-  if (isBalanceError) return <span>Error</span>;
+  if (isBalanceError) {
+    return (
+      <div className="flex items-center space-x-2 text-error">
+        <span>Error fetching balance</span>
+        <button onClick={() => refetchBalance()} className="btn btn-xs btn-error">
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const tokenBalance = typeof balance === "bigint" ? balance : 0n;
+  const formattedBalance = formatBalance(tokenBalance);
 
   return (
     <div className="flex items-center space-x-2">
-      <button onClick={handleFetchBalance} className="btn btn-xs btn-primary">
-        Refresh
+      <button onClick={() => refetchBalance()} className="btn btn-xs btn-ghost" title="Refresh balance">
+        <RefreshCw size={16} />
       </button>
-      <span>{formatEther(tokenBalance)} {contractName}</span>
+      <div className="flex flex-col">
+        <div className="flex items-center space-x-1">
+          <span className="font-medium">{formattedBalance}</span>
+          <span className="text-sm text-base-content/70">{contractName}</span>
+        </div>
+        <div className="tooltip" data-tip={formatEther(tokenBalance)}>
+          <span className="text-xs text-base-content/50">Full balance</span>
+        </div>
+      </div>
       {connectedAddress !== userAddress && (
-        <span className="text-xs text-yellow-500">
-          (Note: Querying balance for {userAddress.slice(0, 6)}...{userAddress.slice(-4)})
-        </span>
+        <div className="tooltip" data-tip={`Querying balance for ${userAddress}`}>
+          <span className="text-xs text-warning">({shortenAddress(userAddress)})</span>
+        </div>
       )}
     </div>
   );

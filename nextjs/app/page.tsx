@@ -2,17 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import addresses from "../../Hardhat/addresses.json";
-import SmartBasketABI from "../../Hardhat/artifacts/contracts/SmartBasket.sol/SmartBasket.json";
+import addresses from "../contracts/addresses.json";
+import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
 import { BasketProvider } from "./BasketContext";
 import CreateBasket from "./CreateBasket";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
 import SellBasket from "./SellBasket";
+import Swap from "./Swap";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
-import { ArrowPathIcon, BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { BugAntIcon, CubeTransparentIcon, LightBulbIcon, MagnifyingGlassIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
+
+
 
 const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
@@ -42,15 +45,68 @@ const Home: React.FC = () => {
       <div className="flex flex-col min-h-screen">
         <div className="pt-8 text-center">
           <div className="container mx-auto px-4 glow">
-            <h1 className="text-4xl font-extrabold mb-4">Smart Basket Portfolio Manager</h1>
-            
-            <p className="text-xl text-base-content opacity-80 max-w-2xl mx-auto">
-              Customize, manage, and optimize your crypto portfolio with ease. Create diversified baskets and track your
-              investments in real-time.
+            <h1 className="text-4xl font-extrabold mb-4">SmartBasket: Customizable Token Portfolio Manager on Neo X</h1>
+            <p className="text-xl text-base-content opacity-80 max-w-2xl mx-auto mb-8">
+              Hackathon Submission for Neo X Code Grinder Challenge
             </p>
           </div>
         </div>
-        
+
+        <div className="container mx-auto px-4 py-8 glow">
+          <h2 className="text-3xl font-bold mb-4">Project Overview</h2>
+          <p className="text-lg mb-6">
+            SmartBasket is an innovative DeFi project built on Neo X, leveraging the power of Neo's EVM-compatible
+            sidechain to create a seamless and efficient token portfolio management experience. It's a Solidity-based
+            smart contract system that allows users to create and manage customizable token portfolios (baskets) using
+            USDT as the base currency. The project implements a complete Uniswap V2 fork for token swaps and liquidity
+            provision, demonstrating the full compatibility of Neo X with Ethereum tooling and complex DeFi
+            infrastructure.
+          </p>
+        </div>
+
+        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+          <div className="flex-1 glow p-6 rounded-lg">
+            <h3 className="text-2xl font-semibold mb-4">Key Features</h3>
+            <ul className="list-disc list-inside space-y-2">
+              <li>Create customized token baskets with up to 5 different tokens</li>
+              <li>Invest in baskets using USDT</li>
+              <li>Sell baskets and receive USDT</li>
+              <li>View basket total value and individual asset details</li>
+              <li>Seamless integration with Neo X's high-performance EVM-based sidechain</li>
+              <li>Full Uniswap V2 functionality for efficient token swaps and liquidity provision</li>
+            </ul>
+          </div>
+
+          <div className="flex-1 glow p-6 rounded-lg">
+            <h3 className="text-2xl font-semibold mb-4">Integration with Neo X</h3>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <div className="w-10 h-10 mr-4 flex items-center justify-center">
+                  <LightBulbIcon className="h-6 w-6 text-white" />
+                </div>
+                <p>Leverages Neo X's EVM compatibility for complex Solidity contracts</p>
+              </div>
+              <div className="flex items-center">
+                <div className="w-10 h-10 mr-4 flex items-center justify-center">
+                  <CubeTransparentIcon className="h-6 w-6 text-white" />
+                </div>
+                <p>Utilizes Neo X's high throughput for efficient token swaps and basket management</p>
+              </div>
+              <div className="flex items-center">
+                <div className="w-10 h-10 mr-4 flex items-center justify-center">
+                  <ShieldCheckIcon className="h-6 w-6 text-white" />
+                </div>
+                <p>Benefits from Neo X's dBFT consensus for secure and quick transaction finality</p>
+              </div>
+              <div className="flex items-center">
+                <div className="w-10 h-10 mr-4 flex items-center justify-center">
+                  <MagnifyingGlassIcon className="h-6 w-6 text-white" />
+                </div>
+                <p>Takes advantage of Neo X's MEV resistance for fair token pricing in Uniswap pools</p>
+              </div>
+            </div>
+          </div>
+        </div>
         <main className="flex-grow container mx-auto px-4 py-8">
           {connectedAddress ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 ">
@@ -175,6 +231,12 @@ const Home: React.FC = () => {
                     <div className="card-body">
                       <h2 className="card-title">Sell Basket</h2>
                       <SellBasket />
+                    </div>
+                  </div>
+
+                  <div className="card bg-base-200 shadow-xl glow">
+                    <div className="card-body">
+                      <Swap />
                     </div>
                   </div>
                 </div>

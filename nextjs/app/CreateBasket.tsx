@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import addresses from "../../Hardhat/addresses.json";
-import ERC20_BASE_ABI from "../../Hardhat/artifacts/contracts/ERC20_BASE.sol/ERC20_BASE.json";
-import SmartBasketABI from "../../Hardhat/artifacts/contracts/SmartBasket.sol/SmartBasket.json";
+import addresses from "../contracts/addresses.json";
+import ERC20_BASE_ABI from "../contracts/artifacts/ERC20_BASE.json";
+import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
 import { useBasketContext } from "./BasketContext";
 import { parseEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+
 
 const MAXUINT256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935n;
 
