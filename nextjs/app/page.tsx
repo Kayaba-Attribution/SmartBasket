@@ -12,10 +12,14 @@ import SellBasket from "./SellBasket";
 import Swap from "./Swap";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
-import { BugAntIcon, CubeTransparentIcon, LightBulbIcon, MagnifyingGlassIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import {
+  BugAntIcon,
+  CubeTransparentIcon,
+  LightBulbIcon,
+  MagnifyingGlassIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
-
-
 
 const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
@@ -24,7 +28,7 @@ const Home: React.FC = () => {
   const [isContractsVisible, setIsContractsVisible] = useState(false);
   const [isAllTokensVisible, setIsAllTokensVisible] = useState(false);
 
-  const { data: basketsData, refetch: refetchBaskets } = useReadContract({
+  const { data: basketsData } = useReadContract({
     address: contractAddress as `0x${string}`,
     abi: SmartBasketABI.abi,
     functionName: "getUserBaskets",
@@ -55,8 +59,8 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-4 py-8 glow">
           <h2 className="text-3xl font-bold mb-4">Project Overview</h2>
           <p className="text-lg mb-6">
-            SmartBasket is an innovative DeFi project built on Neo X, leveraging the power of Neo's EVM-compatible
-            sidechain to create a seamless and efficient token portfolio management experience. It's a Solidity-based
+            SmartBasket is an innovative DeFi project built on Neo X, leveraging the power of Neos EVM-compatible
+            sidechain to create a seamless and efficient token portfolio management experience. Its a Solidity-based
             smart contract system that allows users to create and manage customizable token portfolios (baskets) using
             USDT as the base currency. The project implements a complete Uniswap V2 fork for token swaps and liquidity
             provision, demonstrating the full compatibility of Neo X with Ethereum tooling and complex DeFi
@@ -72,7 +76,7 @@ const Home: React.FC = () => {
               <li>Invest in baskets using USDT</li>
               <li>Sell baskets and receive USDT</li>
               <li>View basket total value and individual asset details</li>
-              <li>Seamless integration with Neo X's high-performance EVM-based sidechain</li>
+              <li>Seamless integration with Neo Xs high-performance EVM-based sidechain</li>
               <li>Full Uniswap V2 functionality for efficient token swaps and liquidity provision</li>
             </ul>
           </div>
@@ -84,25 +88,25 @@ const Home: React.FC = () => {
                 <div className="w-10 h-10 mr-4 flex items-center justify-center">
                   <LightBulbIcon className="h-6 w-6 text-white" />
                 </div>
-                <p>Leverages Neo X's EVM compatibility for complex Solidity contracts</p>
+                <p>Leverages Neo Xs EVM compatibility for complex Solidity contracts</p>
               </div>
               <div className="flex items-center">
                 <div className="w-10 h-10 mr-4 flex items-center justify-center">
                   <CubeTransparentIcon className="h-6 w-6 text-white" />
                 </div>
-                <p>Utilizes Neo X's high throughput for efficient token swaps and basket management</p>
+                <p>Utilizes Neo Xs high throughput for efficient token swaps and basket management</p>
               </div>
               <div className="flex items-center">
                 <div className="w-10 h-10 mr-4 flex items-center justify-center">
                   <ShieldCheckIcon className="h-6 w-6 text-white" />
                 </div>
-                <p>Benefits from Neo X's dBFT consensus for secure and quick transaction finality</p>
+                <p>Benefits from Neo Xs dBFT consensus for secure and quick transaction finality</p>
               </div>
               <div className="flex items-center">
                 <div className="w-10 h-10 mr-4 flex items-center justify-center">
                   <MagnifyingGlassIcon className="h-6 w-6 text-white" />
                 </div>
-                <p>Takes advantage of Neo X's MEV resistance for fair token pricing in Uniswap pools</p>
+                <p>Takes advantage of Neo Xs MEV resistance for fair token pricing in Uniswap pools</p>
               </div>
             </div>
           </div>

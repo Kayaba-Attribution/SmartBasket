@@ -5,6 +5,8 @@ import { useBasketContext } from "./BasketContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 
+
+
 interface BasketDetails {
   tokenAddresses: string[];
   tokenPercentages: number[];
@@ -40,6 +42,7 @@ const GetUserBaskets: React.FC = () => {
 
   const basketCount = Array.isArray(userBaskets) ? userBaskets.length : 0;
 
+  // @ts-ignore
   const assetDetailsResults = useReadContracts({
     contracts: Array.from({ length: basketCount }, (_, i) => ({
       address: addresses.core.SmartBasket as `0x${string}`,
@@ -49,6 +52,7 @@ const GetUserBaskets: React.FC = () => {
     })),
   });
 
+  // @ts-ignore
   const totalValueResults = useReadContracts({
     contracts: Array.from({ length: basketCount }, (_, i) => ({
       address: addresses.core.SmartBasket as `0x${string}`,

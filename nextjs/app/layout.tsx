@@ -5,7 +5,7 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
-  title: "Lottery dApp - Encode",
+  title: "SmartBasket - Neo X",
   description: "Built with 🏗 Scaffold-ETH 2",
 });
 

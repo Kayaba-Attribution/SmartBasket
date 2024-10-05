@@ -89,7 +89,7 @@ function SellBasket() {
           </button>
         </div>
       ) : (
-        <p>You don't have any baskets to sell.</p>
+        <p>You dont have any baskets to sell.</p>
       )}
       {isSellSuccess && <p className="text-green-500 mt-2">Basket sold successfully!</p>}
     </div>

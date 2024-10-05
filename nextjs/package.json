@@ -12,7 +12,7 @@
     "check-types": "tsc --noEmit --incremental",
     "predeploy": "npm run lint && npm run check-types",
     "vercel": "vercel",
-    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
+    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true --public"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.11",

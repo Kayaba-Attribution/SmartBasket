@@ -41,27 +41,27 @@ module.exports = {
       },
       {
         dark: {
-          primary: "#000000",             // Pure black for a full blackout feel
-          "primary-content": "#EDEDED",   // Soft light gray for text against black
-          secondary: "#0A0A0A",           // Slightly lighter black for secondary content
+          primary: "#000000", // Pure black for a full blackout feel
+          "primary-content": "#EDEDED", // Soft light gray for text against black
+          secondary: "#0A0A0A", // Slightly lighter black for secondary content
           "secondary-content": "#EDEDED", // Light gray for readability
-          accent: "#1E1E1E",              // Very dark gray as accent for elements that need subtle highlighting
-          "accent-content": "#F9F9F9",    // Crisp white for high contrast where needed
-          neutral: "#000000",             // Full black for neutral base
-          "neutral-content": "#EDEDED",   // Light gray for text content
-          "base-100": "#000000",          // Pure black base for background
-          "base-200": "#0A0A0A",          // Slightly lighter black for card backgrounds
-          "base-300": "#1A1A1A",          // Dark gray for subtle borders
-          "base-content": "#EDEDED",      // Consistent light gray for text
-          info: "#383838",                // Dark gray for informational highlights
-          success: "#37C991",             // Rich green for success messages, adding vibrancy to the design
-          warning: "#FFC66D",             // Warm gold for warnings to maintain a luxe look
-          error: "#FF6A6A",               // Soft red for errors with a modern feel
-        
-          "--rounded-btn": "0",           // Maintain sharp edges for a professional look
-        
+          accent: "#1E1E1E", // Very dark gray as accent for elements that need subtle highlighting
+          "accent-content": "#F9F9F9", // Crisp white for high contrast where needed
+          neutral: "#000000", // Full black for neutral base
+          "neutral-content": "#EDEDED", // Light gray for text content
+          "base-100": "#000000", // Pure black base for background
+          "base-200": "#0A0A0A", // Slightly lighter black for card backgrounds
+          "base-300": "#1A1A1A", // Dark gray for subtle borders
+          "base-content": "#EDEDED", // Consistent light gray for text
+          info: "#383838", // Dark gray for informational highlights
+          success: "#37C991", // Rich green for success messages, adding vibrancy to the design
+          warning: "#FFC66D", // Warm gold for warnings to maintain a luxe look
+          error: "#FF6A6A", // Soft red for errors with a modern feel
+
+          "--rounded-btn": "0", // Maintain sharp edges for a professional look
+
           ".tooltip": {
-            "--tooltip-tail": "0",        // No tail to maintain sharp, futuristic feel
+            "--tooltip-tail": "0", // No tail to maintain sharp, futuristic feel
             "--tooltip-color": "oklch(var(--p))",
           },
           ".link": {
@@ -71,23 +71,20 @@ module.exports = {
           ".link:hover": {
             opacity: "90%",
           },
-          
+
           // Adding underglow effect for cards
           ".glow": {
-            backgroundColor: "#0A0A0A",    // Dark background for cards
-            boxShadow: "0px 0px 20px 4px rgba(0, 200, 255, 0.15)",  // Neon underglow for high-tech feel
-            borderRadius: "0px",           // No rounding for a sleek, sharp appearance
-            padding: "16px",               // Padding to give card contents space
-            border: "1px solid #1A1A1A",   // Thin border for card separation
+            backgroundColor: "#0A0A0A", // Dark background for cards
+            boxShadow: "0px 0px 20px 4px rgba(0, 200, 255, 0.15)", // Neon underglow for high-tech feel
+            borderRadius: "0px", // No rounding for a sleek, sharp appearance
+            padding: "16px", // Padding to give card contents space
+            border: "1px solid #1A1A1A", // Thin border for card separation
           },
-        
+
           ".glow:hover": {
-            boxShadow: "0px 0px 25px 6px rgba(0, 200, 255, 0.30)",  // Increase glow on hover for interactivity
-          }
+            boxShadow: "0px 0px 25px 6px rgba(0, 200, 255, 0.30)", // Increase glow on hover for interactivity
+          },
         },
-        
-        
-        
       },
     ],
   },

@@ -6,7 +6,6 @@ import { useBasketContext } from "./BasketContext";
 import { parseEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
-
 const MAXUINT256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935n;
 
 const tokens = addresses.tokens;

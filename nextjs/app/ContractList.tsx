@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Address } from "~~/components/scaffold-eth";
 
 interface AddressesType {
@@ -25,7 +25,9 @@ const ContractList: React.FC<ContractListProps> = ({ addresses }) => {
             {Object.entries(addresses).map(([name, address]) => (
               <tr key={name}>
                 <td>{name}</td>
-                <td><Address address={address} /></td>
+                <td>
+                  <Address address={address} />
+                </td>
               </tr>
             ))}
           </tbody>
