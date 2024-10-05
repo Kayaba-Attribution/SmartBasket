@@ -49,7 +49,7 @@ function checkCoreAddresses() {
 
 function checkTokenAddresses() {
   const addresses = readAddresses();
-  if (!addresses.tokens.USDT || !addresses.tokens.ETH || !addresses.tokens.WBTC || !addresses.tokens.XRP || !addresses.tokens.UNI || !addresses.tokens.LINK || !addresses.tokens.DOGE || !addresses.tokens.SHIB || !addresses.tokens.PEPE || !addresses.tokens.FLOKI) {
+  if (!addresses.tokens.USDT || !addresses.tokens.WNEO || !addresses.tokens.WBTC || !addresses.tokens.XRP || !addresses.tokens.UNI || !addresses.tokens.LINK || !addresses.tokens.DOGE || !addresses.tokens.SHIB || !addresses.tokens.PEPE || !addresses.tokens.FLOKI) {
     console.error("Tokens not deployed. Run with DEPLOY_TOKENS=true");
     process.exit(1);
   }
@@ -130,16 +130,23 @@ async function setupTokenPair(
   await token.connect(owner).mint(ownerAddress, tokenAmount);
   await usdt.connect(owner).mint(ownerAddress, usdtAmount);
 
-  console.log("Creating pair...");
   // Create pair
   const tokenAddress = await token.getAddress();
   const usdtAddress = await usdt.getAddress();
 
-  await factory.createPair(tokenAddress, usdtAddress);
-  console.log("Pair created, getting pair address...");
+  console.log("Creating pair...");
+  const createPairTx = await factory.createPair(tokenAddress, usdtAddress);
+  console.log("Waiting for pair creation transaction to be mined...");
+  const receipt = await createPairTx.wait();
+  console.log(`Pair creation transaction mined. Transaction hash: ${receipt.transactionHash}`);
+  
+  console.log("Getting pair address...");
   const pairAddress = await factory.getPair(tokenAddress, usdtAddress);
   console.log(`Pair created at ${pairAddress}`);
-
+  
+  if (pairAddress === '0x0000000000000000000000000000000000000000') {
+    throw new Error("Pair creation failed: returned zero address");
+  }
   // Approve router
   const routerAddress = await router.getAddress();
   await token.connect(owner).approve(routerAddress, MaxUint256);
@@ -198,7 +205,7 @@ async function main() {
     console.log("Deploying tokens...");
     // checkCoreAddresses();
     const usdt = await deployToken(owner, "Tether USD", "USDT", addresses);
-    const eth = await deployToken(owner, "Ethereum", "ETH", addresses);
+    const eth = await deployToken(owner, "Wrapped NEO", "WNEO", addresses);
     const wbtc = await deployToken(owner, "Wrapped Bitcoin", "WBTC", addresses);
     const xrp = await deployToken(owner, "Ripple", "XRP", addresses);
     const uni = await deployToken(owner, "Uniswap", "UNI", addresses);
@@ -219,7 +226,8 @@ async function main() {
     };
     const usdt = await ethers.getContractAt("ERC20_BASE", addresses.tokens.USDT);
 
-    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.ETH), usdt, 2000);
+    // await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.ETH), usdt, 2000);
+    await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.WNEO), usdt, 9.8);
     await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.WBTC), usdt, 60000);
     await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.XRP), usdt, 0.5);
     await setupTokenPair(owner, core.factory, core.router, await ethers.getContractAt("ERC20_BASE", addresses.tokens.UNI), usdt, 5);

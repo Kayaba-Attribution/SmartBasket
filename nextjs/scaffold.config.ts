@@ -1,4 +1,5 @@
 import * as chains from "viem/chains";
+import { defineChain } from 'viem'
 
 export type ScaffoldConfig = {
   targetNetworks: readonly chains.Chain[];
@@ -8,9 +9,36 @@ export type ScaffoldConfig = {
   onlyLocalBurnerWallet: boolean;
 };
 
+
+
+export const neoX = /*#__PURE__*/ defineChain({
+  id: 12227332,
+  name: 'neoX',
+  nativeCurrency: { name: 'NeoX', symbol: 'NeoX', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ['https://neoxt4seed1.ngd.network'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'NeoX Explorer',
+      url: 'https://explorer.t4.nspcc.ru', // Replace with the actual explorer URL if different
+    },
+  },
+  contracts: {
+    // Add multicall3 contract address if available
+    // multicall3: {
+    //   address: '0x...',
+    //   blockCreated: 0,
+    // },
+  },
+  testnet: true, // Assuming this is a testnet, change to false if it's mainnet
+})
+
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.hardhat],
+  targetNetworks: [neoX],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)

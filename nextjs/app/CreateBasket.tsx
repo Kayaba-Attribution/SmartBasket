@@ -14,7 +14,7 @@ const predefinedPlans = [
   {
     name: "Low Risk",
     allocations: [
-      { tokenAddress: tokens.ETH, percentage: 60, amount: 0 },
+      { tokenAddress: tokens.WNEO, percentage: 60, amount: 0 },
       { tokenAddress: tokens.WBTC, percentage: 20, amount: 0 },
       { tokenAddress: tokens.XRP, percentage: 20, amount: 0 },
     ],

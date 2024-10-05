@@ -10,6 +10,7 @@ interface BasketDetails {
   tokenPercentages: number[];
   tokenAmounts: bigint[];
   tokenValues: bigint[];
+  tokenUsdtValues: bigint[];
   totalValue: bigint;
 }
 
@@ -61,7 +62,12 @@ const GetUserBaskets: React.FC = () => {
     if (basketCount > 0 && assetDetailsResults.data && totalValueResults.data) {
       console.log("Asset Details Results:", assetDetailsResults.data);
       const details: BasketDetails[] = assetDetailsResults.data.map((assetDetail, index) => {
-        const [tokenAddresses, tokenPercentages, tokenAmounts, tokenValues] = assetDetail.result as [string[], bigint[], bigint[], bigint[]];
+        const [tokenAddresses, tokenPercentages, tokenAmounts, tokenValues] = assetDetail.result as [
+          string[],
+          bigint[],
+          bigint[],
+          bigint[],
+        ];
         const totalValue = totalValueResults.data[index].result as bigint;
 
         return {
@@ -79,7 +85,7 @@ const GetUserBaskets: React.FC = () => {
 
   if (isLoading || assetDetailsResults.isLoading || totalValueResults.isLoading) return <div>Loading...</div>;
   if (isError || assetDetailsResults.isError || totalValueResults.isError)
-    return <div>Error fetching basket information</div>;
+    return <div>Create some baskets to see the details here.</div>;
 
   const formatValue = (value: bigint) => {
     const formatted = parseFloat(formatEther(value)).toFixed(2);
@@ -115,7 +121,7 @@ const GetUserBaskets: React.FC = () => {
                 <ul>
                   {basket.tokenAddresses.map((address, i) => (
                     <li key={i}>
-                      ({basket.tokenPercentages[i]}%) - {getTokenName(address)} 
+                      ({basket.tokenPercentages[i]}%) - {getTokenName(address)}
                     </li>
                   ))}
                 </ul>

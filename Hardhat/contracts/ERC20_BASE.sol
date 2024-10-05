@@ -9,7 +9,7 @@ contract ERC20_BASE is ERC20, ERC20Burnable, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) {
-        _mint(msg.sender, 1001000 * 10 ** decimals()); // 100,000 tokens
+        _mint(msg.sender, 100000 * 10 ** decimals()); // 100,000 tokens
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
     }

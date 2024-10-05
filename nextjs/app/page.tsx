@@ -43,6 +43,7 @@ const Home: React.FC = () => {
         <div className="pt-8 text-center">
           <div className="container mx-auto px-4 glow">
             <h1 className="text-4xl font-extrabold mb-4">Smart Basket Portfolio Manager</h1>
+            
             <p className="text-xl text-base-content opacity-80 max-w-2xl mx-auto">
               Customize, manage, and optimize your crypto portfolio with ease. Create diversified baskets and track your
               investments in real-time.

@@ -26,9 +26,11 @@ const config: HardhatUserConfig = {
       gasPrice: 1000000000, // 1 gwei
     },
     neoX: {
-      url: "https://neoxwish.ngd.network/",
+      url: "https://neoxt4seed1.ngd.network",
       chainId: 12227332,
       accounts: [PRIVATE_KEY],
+      gasPrice: 40000000000,  // 25 Gwei
+      gas: 3000000,  // Adjust this value as needed
     }
   },
   etherscan: {
