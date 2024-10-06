@@ -14,12 +14,16 @@ function Faucet() {
   });
 
   const handleClaim = async () => {
-    console.log("Claiming tokens...");
-    claimFaucet({
-      address: tokenAddress,
-      abi: ERC20_BASE_ABI.abi,
-      functionName: "claimFaucet",
-    });
+    try {
+      claimFaucet({
+        address: tokenAddress,
+        abi: ERC20_BASE_ABI.abi,
+        functionName: "claimFaucet",
+      });
+      console.log("Claim function called successfully");
+    } catch (error) {
+      console.error("Error calling claimFaucet:", error);
+    }
   };
 
   useEffect(() => {
