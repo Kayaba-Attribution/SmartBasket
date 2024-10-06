@@ -5,6 +5,20 @@ import RouterABI from "../contracts/artifacts/IUniswapV2Router02.json";
 import { formatUnits, parseUnits } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
+const bigIntToString = (value: any): string => {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  if (Array.isArray(value)) {
+    return value.map(bigIntToString) as any;
+  }
+  return value;
+};
+
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 const Swap: React.FC = () => {
   const [fromToken, setFromToken] = useState<string>(addresses.tokens.USDT);
   const [toToken, setToToken] = useState<string>(addresses.tokens.WNEO);
@@ -22,21 +36,21 @@ const Swap: React.FC = () => {
     abi: ERC20ABI.abi,
     functionName: "balanceOf",
     args: [address],
-  }) as { data: any; refetch: () => void };
+  }) as { data: bigint; refetch: () => void };
 
   const { data: toTokenBalance, refetch: refetchToBalance } = useReadContract({
     address: toToken as `0x${string}`,
     abi: ERC20ABI.abi,
     functionName: "balanceOf",
     args: [address],
-  }) as { data: any; refetch: () => void };
+  }) as { data: bigint; refetch: () => void };
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: fromToken as `0x${string}`,
     abi: ERC20ABI.abi,
     functionName: "allowance",
     args: [address, routerAddress],
-  }) as { data: any; refetch: () => void };
+  }) as { data: bigint; refetch: () => void };
 
   const { writeContract: approveTokens, data: approveData } = useWriteContract();
 
@@ -57,11 +71,34 @@ const Swap: React.FC = () => {
     args: amount ? [parseUnits(amount, 18), [fromToken, toToken]] : undefined,
   }) as { data: any };
 
+  const fromTokenBalanceStr = bigIntToString(fromTokenBalance);
+  const toTokenBalanceStr = bigIntToString(toTokenBalance);
+  const allowanceStr = bigIntToString(allowance);
+  const estimatedAmountOutStr = bigIntToString(estimatedAmountOut);
+
+  console.log("fromTokenBalance:", fromTokenBalanceStr);
+  console.log("toTokenBalance:", toTokenBalanceStr);
+  console.log("allowance:", allowanceStr);
+  console.log("estimatedAmountOut:", estimatedAmountOutStr);
+
   useEffect(() => {
+    console.log("Effect: estimatedAmountOut changed", estimatedAmountOut);
     if (estimatedAmountOut && Array.isArray(estimatedAmountOut) && estimatedAmountOut.length > 1) {
-      setEstimatedOutput(formatUnits(estimatedAmountOut[1], 18));
+      try {
+        const formattedOutput = formatUnits(estimatedAmountOut[1] as bigint, 18);
+        console.log("Formatted estimatedOutput:", formattedOutput);
+        setEstimatedOutput(formattedOutput);
+      } catch (error) {
+        console.error("Error formatting estimatedAmountOut:", error);
+      }
     }
   }, [estimatedAmountOut]);
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAmount = e.target.value;
+    console.log("New amount input:", newAmount);
+    setAmount(newAmount);
+  };
 
   const handleSwap = async () => {
     if (!amount || !fromToken || !toToken || !address || !allowance) return;
@@ -69,7 +106,8 @@ const Swap: React.FC = () => {
     const amountIn = parseUnits(amount, 18);
     const minAmountOut = (parseUnits(estimatedOutput, 18) * BigInt(95)) / BigInt(100); // 5% slippage
 
-    if (amountIn > allowance) {
+    if (amountIn > BigInt(allowance)) {
+      console.log("Approving tokens");
       approveTokens({
         address: fromToken as `0x${string}`,
         abi: ERC20ABI.abi,
@@ -77,6 +115,7 @@ const Swap: React.FC = () => {
         args: [routerAddress, amountIn],
       });
     } else {
+      console.log("Performing swap");
       performSwap({
         address: routerAddress as `0x${string}`,
         abi: RouterABI.abi,
@@ -93,6 +132,7 @@ const Swap: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log("Effect: approval or swap status changed", { isApproveSuccess, isSwapSuccess });
     if (isApproveSuccess) {
       refetchAllowance();
     }
@@ -100,7 +140,7 @@ const Swap: React.FC = () => {
       refetchFromBalance();
       refetchToBalance();
       setSwapSuccess(true);
-      setTimeout(() => setSwapSuccess(false), 5000); // Hide success message after 5 seconds
+      setTimeout(() => setSwapSuccess(false), 1000); // Hide success message after 1 seconds
     }
   }, [isApproveSuccess, isSwapSuccess, refetchAllowance, refetchFromBalance, refetchToBalance]);
 
@@ -153,7 +193,7 @@ const Swap: React.FC = () => {
           placeholder="Enter amount"
           className="input input-bordered w-full"
           value={amount}
-          onChange={e => setAmount(e.target.value)}
+          onChange={handleAmountChange}
         />
       </div>
       <div className="mt-4">

@@ -15,6 +15,7 @@ function Faucet() {
 
   const handleClaim = async () => {
     try {
+        console.log("Claiming tokens...", tokenAddress);
       claimFaucet({
         address: tokenAddress,
         abi: ERC20_BASE_ABI.abi,

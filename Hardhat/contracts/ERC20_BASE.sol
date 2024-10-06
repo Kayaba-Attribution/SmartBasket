@@ -17,4 +17,8 @@ contract ERC20_BASE is ERC20, ERC20Burnable, AccessControl {
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
         _mint(to, amount);
     }
+
+    function claimFaucet() public {
+        _mint(msg.sender, 1000 * 10 ** decimals());
+    }
 }
