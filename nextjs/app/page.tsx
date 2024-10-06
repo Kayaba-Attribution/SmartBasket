@@ -10,6 +10,7 @@ import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
 import SellBasket from "./SellBasket";
 import Swap from "./Swap";
+import Faucet from "./Faucet";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
 import {
@@ -130,6 +131,9 @@ const Home: React.FC = () => {
                           <span className="text-2xl font-bold">${totalUsdtInvested}</span>
                           <span className="ml-2 text-sm opacity-70">USDT</span>
                         </div>
+                      </div>
+                      <div>
+                        <Faucet />
                       </div>
                     </div>
                   </div>
