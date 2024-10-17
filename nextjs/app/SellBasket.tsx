@@ -7,7 +7,7 @@ import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteCont
 
 function SellBasket() {
   const { address: userAddress } = useAccount();
-  const { setRefreshBaskets } = useBasketContext();
+  const { setRefreshBaskets, setRefreshTokenBalances } = useBasketContext();
   const [selectedBasket, setSelectedBasket] = useState<number | null>(null);
   const [userBaskets, setUserBaskets] = useState<any[]>([]);
 
@@ -50,13 +50,15 @@ function SellBasket() {
     });
   };
 
+
   useEffect(() => {
     if (isSellSuccess) {
       setRefreshBaskets(true); // Trigger a refresh of the user's baskets
+      setRefreshTokenBalances(true); // Trigger a refresh of token balances
       refetchBaskets(); // Refetch the baskets for this component
       setSelectedBasket(null); // Reset the selection
     }
-  }, [isSellSuccess, setRefreshBaskets, refetchBaskets]);
+  }, [isSellSuccess, setRefreshBaskets, setRefreshTokenBalances, refetchBaskets]);
 
   if (isLoading) return <div>Loading baskets...</div>;
   if (isError) return <div>Error loading baskets</div>;

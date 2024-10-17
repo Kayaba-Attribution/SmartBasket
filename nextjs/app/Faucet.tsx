@@ -2,9 +2,11 @@ import React, { useEffect } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20_BASE_ABI from "../contracts/artifacts/ERC20_BASE.json";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useBasketContext } from "./BasketContext";
 
 function Faucet() {
   const tokenAddress = addresses.tokens.USDT as `0x${string}`;
+  const { setRefreshTokenBalances } = useBasketContext();
 
   // Claim tokens from faucet
   const { writeContract: claimFaucet, data: claimData } = useWriteContract();
@@ -31,8 +33,9 @@ function Faucet() {
     if (isClaimSuccess) {
       // You can add any post-claim logic here, such as updating UI or refreshing balances
       console.log("Tokens claimed successfully!");
+      setRefreshTokenBalances(true); // Trigger a refresh of token balances
     }
-  }, [isClaimSuccess]);
+  }, [isClaimSuccess, setRefreshTokenBalances]);
 
   return (
     <div className="my-2 bg-base-200 rounded-lg glow">

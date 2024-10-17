@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20ABI from "../contracts/artifacts/ERC20_BASE.json";
 import RouterABI from "../contracts/artifacts/IUniswapV2Router02.json";
+import { useBasketContext } from "./BasketContext";
 import { formatUnits, parseUnits } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
@@ -25,6 +26,7 @@ const Swap: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [estimatedOutput, setEstimatedOutput] = useState("0");
   const [swapSuccess, setSwapSuccess] = useState(false);
+  const { setRefreshTokenBalances } = useBasketContext();
 
   const { address } = useAccount();
   const routerAddress = addresses.core.Router;
@@ -81,12 +83,41 @@ const Swap: React.FC = () => {
   console.log("allowance:", allowanceStr);
   console.log("estimatedAmountOut:", estimatedAmountOutStr);
 
+  const formatBalance = (balance: bigint | undefined) => {
+    if (balance === undefined) return "Loading...";
+    return formatUnits(balance, 18);
+  };
+
+  const isBalanceLoaded = fromTokenBalance !== undefined && toTokenBalance !== undefined;
+  const isAmountValid = amount && parseFloat(amount) > 0;
+
+  const needsApproval = 
+    allowance !== undefined && 
+    isAmountValid &&
+    parseUnits(amount, 18) > allowance;
+
+  const hasSufficientBalance = 
+    fromTokenBalance !== undefined && 
+    isAmountValid &&
+    parseUnits(amount, 18) <= fromTokenBalance;
+
+  const canSwap = 
+    isBalanceLoaded && 
+    isAmountValid && 
+    hasSufficientBalance && 
+    !needsApproval;
+
+  const isSwapDisabled = 
+    isApproving || 
+    isSwapping || 
+    !isAmountValid ||
+    !isBalanceLoaded || 
+    !hasSufficientBalance;
+
   useEffect(() => {
-    console.log("Effect: estimatedAmountOut changed", estimatedAmountOut);
     if (estimatedAmountOut && Array.isArray(estimatedAmountOut) && estimatedAmountOut.length > 1) {
       try {
         const formattedOutput = formatUnits(estimatedAmountOut[1] as bigint, 18);
-        console.log("Formatted estimatedOutput:", formattedOutput);
         setEstimatedOutput(formattedOutput);
       } catch (error) {
         console.error("Error formatting estimatedAmountOut:", error);
@@ -94,20 +125,38 @@ const Swap: React.FC = () => {
     }
   }, [estimatedAmountOut]);
 
+  useEffect(() => {
+    if (isApproveSuccess) {
+      refetchAllowance();
+    }
+    if (isSwapSuccess) {
+      refetchFromBalance();
+      refetchToBalance();
+      setSwapSuccess(true);
+      setRefreshTokenBalances(true);
+      setTimeout(() => setSwapSuccess(false), 1000);
+    }
+  }, [
+    isApproveSuccess,
+    isSwapSuccess,
+    refetchAllowance,
+    refetchFromBalance,
+    refetchToBalance,
+    setRefreshTokenBalances,
+  ]);
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAmount = e.target.value;
-    console.log("New amount input:", newAmount);
     setAmount(newAmount);
   };
 
   const handleSwap = async () => {
-    if (!amount || !fromToken || !toToken || !address || !allowance) return;
+    if (!amount || !fromToken || !toToken || !address) return;
 
     const amountIn = parseUnits(amount, 18);
     const minAmountOut = (parseUnits(estimatedOutput, 18) * BigInt(95)) / BigInt(100); // 5% slippage
 
-    if (amountIn > BigInt(allowance)) {
-      console.log("Approving tokens");
+    if (needsApproval) {
       approveTokens({
         address: fromToken as `0x${string}`,
         abi: ERC20ABI.abi,
@@ -115,7 +164,6 @@ const Swap: React.FC = () => {
         args: [routerAddress, amountIn],
       });
     } else {
-      console.log("Performing swap");
       performSwap({
         address: routerAddress as `0x${string}`,
         abi: RouterABI.abi,
@@ -131,23 +179,10 @@ const Swap: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("Effect: approval or swap status changed", { isApproveSuccess, isSwapSuccess });
-    if (isApproveSuccess) {
-      refetchAllowance();
-    }
-    if (isSwapSuccess) {
-      refetchFromBalance();
-      refetchToBalance();
-      setSwapSuccess(true);
-      setTimeout(() => setSwapSuccess(false), 1000); // Hide success message after 1 seconds
-    }
-  }, [isApproveSuccess, isSwapSuccess, refetchAllowance, refetchFromBalance, refetchToBalance]);
-
   const getButtonText = () => {
     if (isApproving) return "Approving...";
     if (isSwapping) return "Swapping...";
-    if (allowance && parseUnits(amount || "0", 18) > allowance) return "Approve";
+    if (needsApproval) return "Approve";
     return "Swap";
   };
 
@@ -169,7 +204,7 @@ const Swap: React.FC = () => {
             </option>
           ))}
         </select>
-        <p className="text-sm mt-1">Balance: {fromTokenBalance ? formatUnits(fromTokenBalance, 18) : "Loading..."}</p>
+        <p className="text-sm mt-1">Balance: {formatBalance(fromTokenBalance)}</p>
       </div>
       <div className="form-control mt-4">
         <label className="label">
@@ -182,7 +217,7 @@ const Swap: React.FC = () => {
             </option>
           ))}
         </select>
-        <p className="text-sm mt-1">Balance: {toTokenBalance ? formatUnits(toTokenBalance, 18) : "Loading..."}</p>
+        <p className="text-sm mt-1">Balance: {formatBalance(toTokenBalance)}</p>
       </div>
       <div className="form-control mt-4">
         <label className="label">
@@ -202,7 +237,7 @@ const Swap: React.FC = () => {
       <button
         className={`btn btn-primary mt-4 ${isApproving || isSwapping ? "loading" : ""}`}
         onClick={handleSwap}
-        disabled={isApproving || isSwapping || !amount || !allowance}
+        disabled={isSwapDisabled}
       >
         {getButtonText()}
       </button>

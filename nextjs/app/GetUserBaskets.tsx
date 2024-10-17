@@ -98,6 +98,7 @@ const GetUserBaskets: React.FC = () => {
 
   const tokenOptions = Object.entries(addresses.tokens).map(([name, address]) => ({ name, address }));
 
+  console.log(tokenOptions)
   const getTokenName = (address: string) => {
     const token = tokenOptions.find(t => t.address === address);
     return token ? token.name : "Unknown";

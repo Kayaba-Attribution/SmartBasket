@@ -16,8 +16,8 @@ task("mint-tokens", "Mints test tokens to a specified address")
 
         // Define token amounts (adjust these as needed for your testing scenario)
         const tokenAmounts = {
-            USDT: ethers.parseUnits("1000000", 18),  // 1 million USDT
-            ETH: ethers.parseUnits("1000", 18),      // 1000 ETH
+            // USDT: ethers.parseUnits("1000000", 18),  // 1 million USDT
+            WNEO: ethers.parseUnits("1000", 18),      // 1000 ETH
             WBTC: ethers.parseUnits("50", 18),       // 50 WBTC
             XRP: ethers.parseUnits("100000", 18),    // 100,000 XRP
             UNI: ethers.parseUnits("10000", 18),     // 10,000 UNI

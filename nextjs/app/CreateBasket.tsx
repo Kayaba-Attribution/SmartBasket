@@ -41,7 +41,6 @@ const tokenOptions = Object.entries(tokens).map(([name, address]) => ({ name, ad
 
 function CreateBasket() {
   const { address: userAddress } = useAccount();
-  const { setRefreshBaskets } = useBasketContext();
 
   const [allowance, setAllowance] = useState<bigint>(0n);
   const [basketAmount, setBasketAmount] = useState("");
@@ -52,6 +51,8 @@ function CreateBasket() {
 
   const basketAddress = addresses.core.SmartBasket as `0x${string}`;
   const usdtAddress = addresses.tokens.USDT as `0x${string}`;
+
+  const { setRefreshBaskets, setRefreshTokenBalances } = useBasketContext();
 
   // Check allowance
   const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
@@ -141,8 +142,10 @@ function CreateBasket() {
   useEffect(() => {
     if (isCreateSuccess) {
       setRefreshBaskets(true);
+      setRefreshTokenBalances(true); // Trigger a refresh of token balances
     }
-  }, [isCreateSuccess, setRefreshBaskets]);
+  }, [isCreateSuccess, setRefreshBaskets, setRefreshTokenBalances]);
+
 
   const isCustomPlanValid =
     customAllocations.length > 0 &&

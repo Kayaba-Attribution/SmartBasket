@@ -3,6 +3,7 @@ import TokenABI from "../contracts/artifacts/ERC20_BASE.json";
 import { formatEther } from "ethers";
 import { RefreshCw } from "lucide-react";
 import { useAccount, useReadContract } from "wagmi";
+import { useBasketContext } from "./BasketContext";
 
 interface GetTokenBalanceProps {
   contractAddress: `0x${string}`;
@@ -12,6 +13,7 @@ interface GetTokenBalanceProps {
 
 const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, userAddress, contractName }) => {
   const { address: connectedAddress } = useAccount();
+  const { refreshTokenBalances, setRefreshTokenBalances } = useBasketContext();
 
   const {
     data: balance,
@@ -27,7 +29,14 @@ const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, user
 
   useEffect(() => {
     refetchBalance();
-  }, [contractAddress, userAddress, refetchBalance]);
+  }, [contractAddress, userAddress, refetchBalance, refreshTokenBalances]);
+
+  useEffect(() => {
+    if (refreshTokenBalances) {
+      refetchBalance();
+      setRefreshTokenBalances(false);
+    }
+  }, [refreshTokenBalances, refetchBalance, setRefreshTokenBalances]);
 
   const formatBalance = (value: bigint) => {
     const formatted = parseFloat(formatEther(value)).toFixed(2);
