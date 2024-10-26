@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
-import { useBasketContext } from "./BasketContext";
+import { usePorfolioContext } from "./PorfolioContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
-
-
 
 interface BasketDetails {
   tokenAddresses: string[];
@@ -17,7 +15,7 @@ interface BasketDetails {
 }
 
 const GetUserBaskets: React.FC = () => {
-  const { refreshBaskets, setRefreshBaskets } = useBasketContext();
+  const { refreshBaskets, setRefreshBaskets } = usePorfolioContext();
   const { address } = useAccount();
   const [basketDetails, setBasketDetails] = useState<BasketDetails[]>([]);
 
@@ -98,7 +96,7 @@ const GetUserBaskets: React.FC = () => {
 
   const tokenOptions = Object.entries(addresses.tokens).map(([name, address]) => ({ name, address }));
 
-  console.log(tokenOptions)
+  console.log(tokenOptions);
   const getTokenName = (address: string) => {
     const token = tokenOptions.find(t => t.address === address);
     return token ? token.name : "Unknown";

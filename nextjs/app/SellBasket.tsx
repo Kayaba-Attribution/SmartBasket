@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
-import { useBasketContext } from "./BasketContext";
+import { usePorfolioContext } from "./PorfolioContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 function SellBasket() {
   const { address: userAddress } = useAccount();
-  const { setRefreshBaskets, setRefreshTokenBalances } = useBasketContext();
+  const { setRefreshBaskets, setRefreshTokenBalances } = usePorfolioContext();
   const [selectedBasket, setSelectedBasket] = useState<number | null>(null);
   const [userBaskets, setUserBaskets] = useState<any[]>([]);
 
@@ -49,7 +49,6 @@ function SellBasket() {
       args: [selectedBasket],
     });
   };
-
 
   useEffect(() => {
     if (isSellSuccess) {

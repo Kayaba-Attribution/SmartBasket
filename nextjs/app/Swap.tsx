@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20ABI from "../contracts/artifacts/ERC20_BASE.json";
 import RouterABI from "../contracts/artifacts/IUniswapV2Router02.json";
-import { useBasketContext } from "./BasketContext";
+import { usePorfolioContext } from "./PorfolioContext";
 import { formatUnits, parseUnits } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
@@ -26,7 +26,7 @@ const Swap: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [estimatedOutput, setEstimatedOutput] = useState("0");
   const [swapSuccess, setSwapSuccess] = useState(false);
-  const { setRefreshTokenBalances } = useBasketContext();
+  const { setRefreshTokenBalances } = usePorfolioContext();
 
   const { address } = useAccount();
   const routerAddress = addresses.core.Router;
@@ -91,28 +91,14 @@ const Swap: React.FC = () => {
   const isBalanceLoaded = fromTokenBalance !== undefined && toTokenBalance !== undefined;
   const isAmountValid = amount && parseFloat(amount) > 0;
 
-  const needsApproval = 
-    allowance !== undefined && 
-    isAmountValid &&
-    parseUnits(amount, 18) > allowance;
+  const needsApproval = allowance !== undefined && isAmountValid && parseUnits(amount, 18) > allowance;
 
-  const hasSufficientBalance = 
-    fromTokenBalance !== undefined && 
-    isAmountValid &&
-    parseUnits(amount, 18) <= fromTokenBalance;
+  const hasSufficientBalance =
+    fromTokenBalance !== undefined && isAmountValid && parseUnits(amount, 18) <= fromTokenBalance;
 
-  const canSwap = 
-    isBalanceLoaded && 
-    isAmountValid && 
-    hasSufficientBalance && 
-    !needsApproval;
+  const canSwap = isBalanceLoaded && isAmountValid && hasSufficientBalance && !needsApproval;
 
-  const isSwapDisabled = 
-    isApproving || 
-    isSwapping || 
-    !isAmountValid ||
-    !isBalanceLoaded || 
-    !hasSufficientBalance;
+  const isSwapDisabled = isApproving || isSwapping || !isAmountValid || !isBalanceLoaded || !hasSufficientBalance;
 
   useEffect(() => {
     if (estimatedAmountOut && Array.isArray(estimatedAmountOut) && estimatedAmountOut.length > 1) {

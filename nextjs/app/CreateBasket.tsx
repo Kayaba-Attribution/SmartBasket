@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20_BASE_ABI from "../contracts/artifacts/ERC20_BASE.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
-import { useBasketContext } from "./BasketContext";
+import { usePorfolioContext } from "./PorfolioContext";
 import { parseEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
@@ -52,7 +52,7 @@ function CreateBasket() {
   const basketAddress = addresses.core.SmartBasket as `0x${string}`;
   const usdtAddress = addresses.tokens.USDT as `0x${string}`;
 
-  const { setRefreshBaskets, setRefreshTokenBalances } = useBasketContext();
+  const { setRefreshBaskets, setRefreshTokenBalances } = usePorfolioContext();
 
   // Check allowance
   const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
@@ -145,7 +145,6 @@ function CreateBasket() {
       setRefreshTokenBalances(true); // Trigger a refresh of token balances
     }
   }, [isCreateSuccess, setRefreshBaskets, setRefreshTokenBalances]);
-
 
   const isCustomPlanValid =
     customAllocations.length > 0 &&

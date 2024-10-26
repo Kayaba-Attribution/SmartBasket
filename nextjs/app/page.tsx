@@ -4,23 +4,18 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import addresses from "../contracts/addresses.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
-import { BasketProvider } from "./BasketContext";
 import CreateBasket from "./CreateBasket";
+import Faucet from "./Faucet";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
+import { BasketProvider } from "./PorfolioContext";
 import SellBasket from "./SellBasket";
 import Swap from "./Swap";
-import Faucet from "./Faucet";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
-import {
-  BugAntIcon,
-  CubeTransparentIcon,
-  LightBulbIcon,
-  MagnifyingGlassIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
+import { BugAntIcon, CubeTransparentIcon, LightBulbIcon, MagnifyingGlassIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
+
 
 const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
