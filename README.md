@@ -1,5 +1,20 @@
 # SmartBasket: Customizable Token Portfolio Manager on Neo X
 
+# Things to do
+- Rebrand basket to portfolio
+- Show better baskets indexes
+- Display risk levels
+   - volatility
+- Analytics
+   - amounts per risk levels (pie chart)
+- move sell to baskets list
+- percentages of money in basket
+- 1 min balance refresh
+- Alerts and management
+   - +/-x % send alert (email, telegram)
+   - Actions sell, add liquidity
+
+
 ## Hackathon Submission for Neo X Code Grinder Challenge
 
 SmartBasket is an innovative DeFi project built on Neo X, leveraging the power of Neo's EVM-compatible sidechain to create a seamless and efficient token portfolio management experience. This project showcases the capabilities of Neo X in fostering an open, diverse ecosystem where developers can thrive in driving progress towards the Smart Economy.
