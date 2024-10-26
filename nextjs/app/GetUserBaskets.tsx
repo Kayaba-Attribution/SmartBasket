@@ -3,21 +3,22 @@ import addresses from "../contracts/addresses.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
 import { usePortfolioContext } from "./PortfolioContext";
 import { formatEther } from "ethers";
-import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { useAccount, useReadContract, useReadContracts, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 interface BasketDetails {
   tokenAddresses: string[];
   tokenPercentages: number[];
   tokenAmounts: bigint[];
   tokenValues: bigint[];
-  tokenUsdtValues: bigint[];
+  investmentValue: bigint;
   totalValue: bigint;
 }
 
 const GetUserBaskets: React.FC = () => {
-  const { refreshBaskets, setRefreshBaskets } = usePortfolioContext();
+  const { refreshBaskets, setRefreshBaskets, setRefreshTokenBalances } = usePortfolioContext();
   const { address } = useAccount();
   const [basketDetails, setBasketDetails] = useState<BasketDetails[]>([]);
+  const [sellingBasketId, setSellingBasketId] = useState<number | null>(null);
 
   const {
     data: userBaskets,
@@ -30,6 +31,31 @@ const GetUserBaskets: React.FC = () => {
     functionName: "getUserBaskets",
     args: [address],
   });
+
+  // Sell Basket functionality
+  const { writeContract: sellBasket, data: sellData } = useWriteContract();
+  const { isLoading: isSelling, isSuccess: isSellSuccess } = useWaitForTransactionReceipt({
+    hash: sellData,
+  });
+
+  const handleSellBasket = async (basketId: number) => {
+    setSellingBasketId(basketId);
+    sellBasket({
+      address: addresses.core.SmartBasket as `0x${string}`,
+      abi: SmartBasketABI.abi,
+      functionName: "sellBasket",
+      args: [basketId],
+    });
+  };
+
+  useEffect(() => {
+    if (isSellSuccess) {
+      setRefreshBaskets(true);
+      setRefreshTokenBalances(true);
+      refetch();
+      setSellingBasketId(null);
+    }
+  }, [isSellSuccess, setRefreshBaskets, setRefreshTokenBalances, refetch]);
 
   useEffect(() => {
     if (refreshBaskets) {
@@ -61,8 +87,7 @@ const GetUserBaskets: React.FC = () => {
   });
 
   useEffect(() => {
-    if (basketCount > 0 && assetDetailsResults.data && totalValueResults.data) {
-      console.log("Asset Details Results:", assetDetailsResults.data);
+    if (basketCount > 0 && assetDetailsResults.data && totalValueResults.data && Array.isArray(userBaskets)) {
       const details: BasketDetails[] = assetDetailsResults.data.map((assetDetail, index) => {
         const [tokenAddresses, tokenPercentages, tokenAmounts, tokenValues] = assetDetail.result as [
           string[],
@@ -71,19 +96,20 @@ const GetUserBaskets: React.FC = () => {
           bigint[],
         ];
         const totalValue = totalValueResults.data[index].result as bigint;
+        const investmentValue = userBaskets[index].investmentValue;
 
         return {
           tokenAddresses,
-          tokenPercentages: tokenPercentages.map(p => Number(p)), // Convert bigint to number
+          tokenPercentages: tokenPercentages.map(p => Number(p)),
           tokenAmounts,
           tokenValues,
+          investmentValue,
           totalValue,
         };
       });
-      console.log("Processed Basket Details:", details);
       setBasketDetails(details);
     }
-  }, [basketCount, assetDetailsResults.data, totalValueResults.data]);
+  }, [basketCount, assetDetailsResults.data, totalValueResults.data, userBaskets]);
 
   if (isLoading || assetDetailsResults.isLoading || totalValueResults.isLoading) return <div>Loading...</div>;
   if (isError || assetDetailsResults.isError || totalValueResults.isError)
@@ -94,9 +120,15 @@ const GetUserBaskets: React.FC = () => {
     return formatted === "-0.00" ? "0.00" : formatted;
   };
 
+  const calculateROI = (current: bigint, initial: bigint) => {
+    const currentValue = Number(formatValue(current));
+    const initialValue = Number(formatValue(initial));
+    const roi = ((currentValue - initialValue) / initialValue) * 100;
+    return roi.toFixed(2);
+  };
+
   const tokenOptions = Object.entries(addresses.tokens).map(([name, address]) => ({ name, address }));
 
-  console.log(tokenOptions);
   const getTokenName = (address: string) => {
     const token = tokenOptions.find(t => t.address === address);
     return token ? token.name : "Unknown";
@@ -114,7 +146,10 @@ const GetUserBaskets: React.FC = () => {
             <th>Tokens</th>
             <th>Amounts</th>
             <th>Values (USDT)</th>
-            <th>Total Value (USDT)</th>
+            <th>Initial Investment</th>
+            <th>Current Value</th>
+            <th>ROI</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -143,11 +178,35 @@ const GetUserBaskets: React.FC = () => {
                   ))}
                 </ul>
               </td>
-              <td>{formatValue(basket.totalValue)}</td>
+              <td>{formatValue(basket.investmentValue)} USDT</td>
+              <td>{formatValue(basket.totalValue)} USDT</td>
+              <td>
+                <span className={Number(calculateROI(basket.totalValue, basket.investmentValue)) >= 0 ? "text-green-500" : "text-red-500"}>
+                  {calculateROI(basket.totalValue, basket.investmentValue)}%
+                </span>
+              </td>
+              <td>
+                <button
+                  onClick={() => handleSellBasket(basketIndex)}
+                  disabled={isSelling && sellingBasketId === basketIndex}
+                  className="btn btn-primary btn-sm"
+                >
+                  {isSelling && sellingBasketId === basketIndex ? (
+                    <span className="loading loading-spinner loading-sm"></span>
+                  ) : (
+                    "Sell"
+                  )}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {isSellSuccess && (
+        <div className="alert alert-success mt-4">
+          <span>Basket sold successfully!</span>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,7 +7,7 @@
    - [ ] volatility
 - [ ] Analytics
    - [ ] amounts per risk levels (pie chart)
-- [ ] move sell to baskets list
+- [X] move sell to baskets list
 - [ ] percentages of money in basket
 - [ ] 1 min balance refresh
 - [ ] Alerts and management
