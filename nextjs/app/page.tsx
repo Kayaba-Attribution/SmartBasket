@@ -3,30 +3,35 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import addresses from "../contracts/addresses.json";
-import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
+import SmartPortfolioABI from "../contracts/artifacts/SmartBasket.json";
 import CreateBasket from "./CreateBasket";
 import Faucet from "./Faucet";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
-import { BasketProvider } from "./PorfolioContext";
+import { PortfolioProvider } from "./PortfolioContext";
 import SellBasket from "./SellBasket";
 import Swap from "./Swap";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
-import { BugAntIcon, CubeTransparentIcon, LightBulbIcon, MagnifyingGlassIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import {
+  BugAntIcon,
+  CubeTransparentIcon,
+  LightBulbIcon,
+  MagnifyingGlassIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
-
 
 const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
-  const contractAddress = addresses.core.SmartBasket;
+  const contractAddress = addresses.core.SmartPortfolio;
   const [totalUsdtInvested, setTotalUsdtInvested] = useState("0.00");
   const [isContractsVisible, setIsContractsVisible] = useState(false);
   const [isAllTokensVisible, setIsAllTokensVisible] = useState(false);
 
   const { data: basketsData } = useReadContract({
     address: contractAddress as `0x${string}`,
-    abi: SmartBasketABI.abi,
+    abi: SmartPortfolioABI.abi,
     functionName: "getUserBaskets",
     args: [connectedAddress],
   });
@@ -41,11 +46,11 @@ const Home: React.FC = () => {
   const tokenEntries = Object.entries(addresses.tokens);
 
   return (
-    <BasketProvider>
+    <PortfolioProvider>
       <div className="flex flex-col min-h-screen">
         <div className="pt-8 text-center">
           <div className="container mx-auto px-4 glow">
-            <h1 className="text-4xl font-extrabold mb-4">SmartBasket: Customizable Token Portfolio Manager on Neo X</h1>
+            <h1 className="text-4xl font-extrabold mb-4">SmartPortfolio: Customizable Token Portfolio Manager on Neo X</h1>
             <p className="text-xl text-base-content opacity-80 max-w-2xl mx-auto mb-8">
               Hackathon Submission for Neo X Code Grinder Challenge
             </p>
@@ -55,7 +60,7 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-4 py-8 glow">
           <h2 className="text-3xl font-bold mb-4">Project Overview</h2>
           <p className="text-lg mb-6">
-            SmartBasket is an innovative DeFi project built on Neo X, leveraging the power of Neos EVM-compatible
+            SmartPortfolio is an innovative DeFi project built on Neo X, leveraging the power of Neos EVM-compatible
             sidechain to create a seamless and efficient token portfolio management experience. Its a Solidity-based
             smart contract system that allows users to create and manage customizable token portfolios (baskets) using
             USDT as the base currency. The project implements a complete Uniswap V2 fork for token swaps and liquidity
@@ -278,7 +283,7 @@ const Home: React.FC = () => {
           </div>
         </footer>
       </div>
-    </BasketProvider>
+    </PortfolioProvider>
   );
 };
 

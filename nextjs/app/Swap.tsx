@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20ABI from "../contracts/artifacts/ERC20_BASE.json";
 import RouterABI from "../contracts/artifacts/IUniswapV2Router02.json";
-import { usePorfolioContext } from "./PorfolioContext";
+import { usePortfolioContext } from "./PortfolioContext";
 import { formatUnits, parseUnits } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
@@ -26,7 +26,7 @@ const Swap: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [estimatedOutput, setEstimatedOutput] = useState("0");
   const [swapSuccess, setSwapSuccess] = useState(false);
-  const { setRefreshTokenBalances } = usePorfolioContext();
+  const { setRefreshTokenBalances } = usePortfolioContext();
 
   const { address } = useAccount();
   const routerAddress = addresses.core.Router;

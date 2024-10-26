@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
-import { usePorfolioContext } from "./PorfolioContext";
+import { usePortfolioContext } from "./PortfolioContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 
@@ -15,7 +15,7 @@ interface BasketDetails {
 }
 
 const GetUserBaskets: React.FC = () => {
-  const { refreshBaskets, setRefreshBaskets } = usePorfolioContext();
+  const { refreshBaskets, setRefreshBaskets } = usePortfolioContext();
   const { address } = useAccount();
   const [basketDetails, setBasketDetails] = useState<BasketDetails[]>([]);
 

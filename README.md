@@ -1,18 +1,18 @@
 # SmartBasket: Customizable Token Portfolio Manager on Neo X
 
 # Things to do
-- Rebrand basket to portfolio
-- Show better baskets indexes
-- Display risk levels
-   - volatility
-- Analytics
-   - amounts per risk levels (pie chart)
-- move sell to baskets list
-- percentages of money in basket
-- 1 min balance refresh
-- Alerts and management
-   - +/-x % send alert (email, telegram)
-   - Actions sell, add liquidity
+- [X] Rebrand basket to portfolio
+- [ ] Show better baskets indexes
+- [ ] Display risk levels
+   - [ ] volatility
+- [ ] Analytics
+   - [ ] amounts per risk levels (pie chart)
+- [ ] move sell to baskets list
+- [ ] percentages of money in basket
+- [ ] 1 min balance refresh
+- [ ] Alerts and management
+   - [ ] +/-x % send alert (email, telegram)
+   - [ ] Actions sell, add liquidity
 
 
 ## Hackathon Submission for Neo X Code Grinder Challenge

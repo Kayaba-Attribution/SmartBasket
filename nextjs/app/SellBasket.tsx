@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
-import { usePorfolioContext } from "./PorfolioContext";
+import { usePortfolioContext } from "./PortfolioContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 function SellBasket() {
   const { address: userAddress } = useAccount();
-  const { setRefreshBaskets, setRefreshTokenBalances } = usePorfolioContext();
+  const { setRefreshBaskets, setRefreshTokenBalances } = usePortfolioContext();
   const [selectedBasket, setSelectedBasket] = useState<number | null>(null);
   const [userBaskets, setUserBaskets] = useState<any[]>([]);
 

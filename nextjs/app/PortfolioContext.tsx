@@ -1,32 +1,31 @@
 import React, { createContext, useContext, useState } from "react";
 
-
-interface PorfolioContextType {
+interface PortfolioContextType {
   refreshBaskets: boolean;
   setRefreshBaskets: (refresh: boolean) => void;
   refreshTokenBalances: boolean;
   setRefreshTokenBalances: (refresh: boolean) => void;
 }
 
-const PorfolioContext = createContext<PorfolioContextType | undefined>(undefined);
+const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
-export const BasketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [refreshBaskets, setRefreshBaskets] = useState(false);
   const [refreshTokenBalances, setRefreshTokenBalances] = useState(false);
 
   return (
-    <PorfolioContext.Provider
+    <PortfolioContext.Provider
       value={{ refreshBaskets, setRefreshBaskets, refreshTokenBalances, setRefreshTokenBalances }}
     >
       {children}
-    </PorfolioContext.Provider>
+    </PortfolioContext.Provider>
   );
 };
 
-export const usePorfolioContext = () => {
-  const context = useContext(PorfolioContext);
+export const usePortfolioContext = () => {
+  const context = useContext(PortfolioContext);
   if (!context) {
-    throw new Error("usePorfolioContext must be used within a BasketProvider");
+    throw new Error("usePortfolioContext must be used within a PortfolioProvider");
   }
   return context;
 };

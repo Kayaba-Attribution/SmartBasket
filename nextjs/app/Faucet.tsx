@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20_BASE_ABI from "../contracts/artifacts/ERC20_BASE.json";
-import { usePorfolioContext } from "./PorfolioContext";
+import { usePortfolioContext } from "./PortfolioContext";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 function Faucet() {
   const tokenAddress = addresses.tokens.USDT as `0x${string}`;
-  const { setRefreshTokenBalances } = usePorfolioContext();
+  const { setRefreshTokenBalances } = usePortfolioContext();
 
   // Claim tokens from faucet
   const { writeContract: claimFaucet, data: claimData } = useWriteContract();

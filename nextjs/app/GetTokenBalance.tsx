@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import TokenABI from "../contracts/artifacts/ERC20_BASE.json";
-import { usePorfolioContext } from "./PorfolioContext";
+import { usePortfolioContext } from "./PortfolioContext";
 import { formatEther } from "ethers";
 import { RefreshCw } from "lucide-react";
 import { useAccount, useReadContract } from "wagmi";
@@ -13,7 +13,7 @@ interface GetTokenBalanceProps {
 
 const GetTokenBalance: React.FC<GetTokenBalanceProps> = ({ contractAddress, userAddress, contractName }) => {
   const { address: connectedAddress } = useAccount();
-  const { refreshTokenBalances, setRefreshTokenBalances } = usePorfolioContext();
+  const { refreshTokenBalances, setRefreshTokenBalances } = usePortfolioContext();
 
   const {
     data: balance,
