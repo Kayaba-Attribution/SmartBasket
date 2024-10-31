@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 
 interface PortfolioContextType {
-  refreshBaskets: boolean;
-  setRefreshBaskets: (refresh: boolean) => void;
+  refreshPortfolios: boolean;
+  setRefreshPortfolios: (refresh: boolean) => void;
   refreshTokenBalances: boolean;
   setRefreshTokenBalances: (refresh: boolean) => void;
 }
@@ -10,12 +10,17 @@ interface PortfolioContextType {
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [refreshBaskets, setRefreshBaskets] = useState(false);
+  const [refreshPortfolios, setRefreshPortfolios] = useState(false);
   const [refreshTokenBalances, setRefreshTokenBalances] = useState(false);
 
   return (
     <PortfolioContext.Provider
-      value={{ refreshBaskets, setRefreshBaskets, refreshTokenBalances, setRefreshTokenBalances }}
+      value={{
+        refreshPortfolios,
+        setRefreshPortfolios,
+        refreshTokenBalances,
+        setRefreshTokenBalances
+      }}
     >
       {children}
     </PortfolioContext.Provider>

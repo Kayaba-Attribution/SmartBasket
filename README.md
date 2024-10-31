@@ -8,6 +8,7 @@
 - [ ] Analytics
    - [ ] amounts per risk levels (pie chart)
 - [X] move sell to baskets list
+- [X] Add perctange on basket creation
 - [ ] percentages of money in basket
 - [ ] 1 min balance refresh
 - [ ] Alerts and management

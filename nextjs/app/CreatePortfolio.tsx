@@ -39,7 +39,7 @@ const predefinedPlans = [
 
 const tokenOptions = Object.entries(tokens).map(([name, address]) => ({ name, address }));
 
-function CreateBasket() {
+function CreatePortfolio() {
   const { address: userAddress } = useAccount();
 
   const [allowance, setAllowance] = useState<bigint>(0n);
@@ -160,7 +160,7 @@ function CreateBasket() {
 
   return (
     <div className="my-2 p-4 bg-base-200 rounded-lg">
-      <h3 className="text-lg font-bold mb-4">Create Basket</h3>
+      <h3 className="text-xl font-bold mb-4">Create Basket</h3>
 
       {allowance === 0n ? (
         <div>
@@ -173,7 +173,9 @@ function CreateBasket() {
         <div className="space-y-4">
           <div>
             <label className="label">
-              <span className="label-text">Select Investment Plan</span>
+              <span className="label-text">
+                Select Investment Plan <br /> OR Create your own portfolio
+              </span>
             </label>
             <select
               className="select select-bordered w-full"
@@ -225,7 +227,11 @@ function CreateBasket() {
                     onChange={e => handleCustomAllocationChange(index, "percentage", e.target.value)}
                     placeholder="%"
                   />
-                  <button className="btn btn-square btn-sm" onClick={() => removeCustomAllocation(index)}>
+                  <span className="p-2">%</span>
+                  <button
+                    className="btn btn-square btn-outline btn-sm text-center"
+                    onClick={() => removeCustomAllocation(index)}
+                  >
                     X
                   </button>
                 </div>
@@ -235,8 +241,8 @@ function CreateBasket() {
                   Add Token
                 </button>
               )}
-              {selectedPlan === "custom" && !isCustomPlanValid && (
-                <p className="text-error">
+              {selectedPlan === "custom" && !isCustomPlanValid && customAllocations.length > 0 && (
+                <p className="text-warning text-sm text-center">
                   Please ensure all tokens are selected, percentages are greater than 0, and the total percentage is
                   100%.
                 </p>
@@ -274,4 +280,4 @@ function CreateBasket() {
   );
 }
 
-export default CreateBasket;
+export default CreatePortfolio;

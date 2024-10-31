@@ -4,12 +4,12 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import addresses from "../contracts/addresses.json";
 import SmartPortfolioABI from "../contracts/artifacts/SmartBasket.json";
-import CreateBasket from "./CreateBasket";
+import CreatePortfolio from "./CreatePortfolio";
 import Faucet from "./Faucet";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
 import { PortfolioProvider } from "./PortfolioContext";
-import SellBasket from "./SellBasket";
+
 import Swap from "./Swap";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
@@ -24,7 +24,7 @@ import { Address } from "~~/components/scaffold-eth";
 
 const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
-  const contractAddress = addresses.core.SmartPortfolio;
+  const contractAddress = addresses.core.SmartBasket;
   const [totalUsdtInvested, setTotalUsdtInvested] = useState("0.00");
   const [isContractsVisible, setIsContractsVisible] = useState(false);
   const [isAllTokensVisible, setIsAllTokensVisible] = useState(false);
@@ -230,15 +230,7 @@ const Home: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="card bg-base-200 shadow-xl glow">
                     <div className="card-body">
-                      <h2 className="card-title">Create Basket</h2>
-                      <CreateBasket />
-                    </div>
-                  </div>
-
-                  <div className="card bg-base-200 shadow-xl glow">
-                    <div className="card-body">
-                      <h2 className="card-title">Sell Basket</h2>
-                      <SellBasket />
+                      <CreatePortfolio />
                     </div>
                   </div>
 

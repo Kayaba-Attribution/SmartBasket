@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
-import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
+import SmartPortfolioABI from "../contracts/artifacts/SmartBasket.json";
 import { usePortfolioContext } from "./PortfolioContext";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract, useReadContracts, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
-interface BasketDetails {
+interface PortfolioDetails {
   tokenAddresses: string[];
   tokenPercentages: number[];
   tokenAmounts: bigint[];
@@ -14,81 +14,81 @@ interface BasketDetails {
   totalValue: bigint;
 }
 
-const GetUserBaskets: React.FC = () => {
-  const { refreshBaskets, setRefreshBaskets, setRefreshTokenBalances } = usePortfolioContext();
+const GetUserPortfolios: React.FC = () => {
+  const { refreshPortfolios, setRefreshPortfolios, setRefreshTokenBalances } = usePortfolioContext();
   const { address } = useAccount();
-  const [basketDetails, setBasketDetails] = useState<BasketDetails[]>([]);
-  const [sellingBasketId, setSellingBasketId] = useState<number | null>(null);
+  const [portfolioDetails, setPortfolioDetails] = useState<PortfolioDetails[]>([]);
+  const [sellingPortfolioId, setSellingPortfolioId] = useState<number | null>(null);
 
   const {
-    data: userBaskets,
+    data: userPortfolios,
     isError,
     isLoading,
     refetch,
   } = useReadContract({
-    address: addresses.core.SmartBasket as `0x${string}`,
-    abi: SmartBasketABI.abi,
+    address: addresses.core.SmartPortfolio as `0x${string}`,
+    abi: SmartPortfolioABI.abi,
     functionName: "getUserBaskets",
     args: [address],
   });
 
-  // Sell Basket functionality
-  const { writeContract: sellBasket, data: sellData } = useWriteContract();
+  // Sell Portfolio functionality
+  const { writeContract: sellPortfolio, data: sellData } = useWriteContract();
   const { isLoading: isSelling, isSuccess: isSellSuccess } = useWaitForTransactionReceipt({
     hash: sellData,
   });
 
-  const handleSellBasket = async (basketId: number) => {
-    setSellingBasketId(basketId);
-    sellBasket({
-      address: addresses.core.SmartBasket as `0x${string}`,
-      abi: SmartBasketABI.abi,
+  const handleSellPortfolio = async (portfolioId: number) => {
+    setSellingPortfolioId(portfolioId);
+    sellPortfolio({
+      address: addresses.core.SmartPortfolio as `0x${string}`,
+      abi: SmartPortfolioABI.abi,
       functionName: "sellBasket",
-      args: [basketId],
+      args: [portfolioId],
     });
   };
 
   useEffect(() => {
     if (isSellSuccess) {
-      setRefreshBaskets(true);
+      setRefreshPortfolios(true);
       setRefreshTokenBalances(true);
       refetch();
-      setSellingBasketId(null);
+      setSellingPortfolioId(null);
     }
-  }, [isSellSuccess, setRefreshBaskets, setRefreshTokenBalances, refetch]);
+  }, [isSellSuccess, setRefreshPortfolios, setRefreshTokenBalances, refetch]);
 
   useEffect(() => {
-    if (refreshBaskets) {
+    if (refreshPortfolios) {
       refetch();
-      setRefreshBaskets(false);
+      setRefreshPortfolios(false);
     }
-  }, [refreshBaskets, refetch, setRefreshBaskets]);
+  }, [refreshPortfolios, refetch, setRefreshPortfolios]);
 
-  const basketCount = Array.isArray(userBaskets) ? userBaskets.length : 0;
+  const portfolioCount = Array.isArray(userPortfolios) ? userPortfolios.length : 0;
 
-  // @ts-ignore
   const assetDetailsResults = useReadContracts({
-    contracts: Array.from({ length: basketCount }, (_, i) => ({
-      address: addresses.core.SmartBasket as `0x${string}`,
-      abi: SmartBasketABI.abi,
+    // @ts-ignore
+    contracts: Array.from({ length: portfolioCount }, (_, i) => ({
+      address: addresses.core.SmartPortfolio as `0x${string}`,
+      abi: SmartPortfolioABI.abi,
       functionName: "getBasketAssetDetails",
       args: [address, i],
     })),
   });
 
-  // @ts-ignore
   const totalValueResults = useReadContracts({
-    contracts: Array.from({ length: basketCount }, (_, i) => ({
-      address: addresses.core.SmartBasket as `0x${string}`,
-      abi: SmartBasketABI.abi,
+    // @ts-ignore
+    contracts: Array.from({ length: portfolioCount }, (_, i) => ({
+      address: addresses.core.SmartPortfolio as `0x${string}`,
+      abi: SmartPortfolioABI.abi,
       functionName: "getBasketTotalValue",
       args: [address, i],
     })),
   });
 
   useEffect(() => {
-    if (basketCount > 0 && assetDetailsResults.data && totalValueResults.data && Array.isArray(userBaskets)) {
-      const details: BasketDetails[] = assetDetailsResults.data.map((assetDetail, index) => {
+    if (portfolioCount > 0 && assetDetailsResults.data && totalValueResults.data && Array.isArray(userPortfolios)) {
+      const details: PortfolioDetails[] = assetDetailsResults.data.map((assetDetail, index) => {
         const [tokenAddresses, tokenPercentages, tokenAmounts, tokenValues] = assetDetail.result as [
           string[],
           bigint[],
@@ -96,7 +96,7 @@ const GetUserBaskets: React.FC = () => {
           bigint[],
         ];
         const totalValue = totalValueResults.data[index].result as bigint;
-        const investmentValue = userBaskets[index].investmentValue;
+        const investmentValue = userPortfolios[index].investmentValue;
 
         return {
           tokenAddresses,
@@ -107,13 +107,13 @@ const GetUserBaskets: React.FC = () => {
           totalValue,
         };
       });
-      setBasketDetails(details);
+      setPortfolioDetails(details);
     }
-  }, [basketCount, assetDetailsResults.data, totalValueResults.data, userBaskets]);
+  }, [portfolioCount, assetDetailsResults.data, totalValueResults.data, userPortfolios]);
 
   if (isLoading || assetDetailsResults.isLoading || totalValueResults.isLoading) return <div>Loading...</div>;
   if (isError || assetDetailsResults.isError || totalValueResults.isError)
-    return <div>Create some baskets to see the details here.</div>;
+    return <div>Create some portfolios to see the details here.</div>;
 
   const formatValue = (value: bigint) => {
     const formatted = parseFloat(formatEther(value)).toFixed(2);
@@ -137,8 +137,8 @@ const GetUserBaskets: React.FC = () => {
   return (
     <div className="overflow-x-auto">
       <div className="flex">
-        <h2 className="text-2xl font-semibold mb-4">Your Baskets </h2>
-        <div className="ml-4 badge badge-lg">Total: {basketCount}</div>
+        <h2 className="text-2xl font-semibold mb-4">Your Portfolios </h2>
+        <div className="ml-4 badge badge-lg">Total: {portfolioCount}</div>
       </div>
       <table className="table w-full">
         <thead>
@@ -153,45 +153,45 @@ const GetUserBaskets: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {basketDetails.map((basket, basketIndex) => (
-            <tr key={basketIndex}>
+          {portfolioDetails.map((portfolio, portfolioIndex) => (
+            <tr key={portfolioIndex}>
               <td>
                 <ul>
-                  {basket.tokenAddresses.map((address, i) => (
+                  {portfolio.tokenAddresses.map((address, i) => (
                     <li key={i}>
-                      ({basket.tokenPercentages[i]}%) - {getTokenName(address)}
+                      ({portfolio.tokenPercentages[i]}%) - {getTokenName(address)}
                     </li>
                   ))}
                 </ul>
               </td>
               <td>
                 <ul>
-                  {basket.tokenAmounts.map((amount, i) => (
+                  {portfolio.tokenAmounts.map((amount, i) => (
                     <li key={i}>{formatValue(amount)}</li>
                   ))}
                 </ul>
               </td>
               <td>
                 <ul>
-                  {basket.tokenValues.map((value, i) => (
+                  {portfolio.tokenValues.map((value, i) => (
                     <li key={i}>{formatValue(value)}</li>
                   ))}
                 </ul>
               </td>
-              <td>{formatValue(basket.investmentValue)} USDT</td>
-              <td>{formatValue(basket.totalValue)} USDT</td>
+              <td>{formatValue(portfolio.investmentValue)} USDT</td>
+              <td>{formatValue(portfolio.totalValue)} USDT</td>
               <td>
-                <span className={Number(calculateROI(basket.totalValue, basket.investmentValue)) >= 0 ? "text-green-500" : "text-red-500"}>
-                  {calculateROI(basket.totalValue, basket.investmentValue)}%
+                <span className={Number(calculateROI(portfolio.totalValue, portfolio.investmentValue)) >= 0 ? "text-green-500" : "text-red-500"}>
+                  {calculateROI(portfolio.totalValue, portfolio.investmentValue)}%
                 </span>
               </td>
               <td>
                 <button
-                  onClick={() => handleSellBasket(basketIndex)}
-                  disabled={isSelling && sellingBasketId === basketIndex}
+                  onClick={() => handleSellPortfolio(portfolioIndex)}
+                  disabled={isSelling && sellingPortfolioId === portfolioIndex}
                   className="btn btn-primary btn-sm"
                 >
-                  {isSelling && sellingBasketId === basketIndex ? (
+                  {isSelling && sellingPortfolioId === portfolioIndex ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
                     "Sell"
@@ -204,11 +204,11 @@ const GetUserBaskets: React.FC = () => {
       </table>
       {isSellSuccess && (
         <div className="alert alert-success mt-4">
-          <span>Basket sold successfully!</span>
+          <span>Portfolio sold successfully!</span>
         </div>
       )}
     </div>
   );
 };
 
-export default GetUserBaskets;
+export default GetUserPortfolios;
