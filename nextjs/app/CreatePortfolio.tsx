@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import ERC20_BASE_ABI from "../contracts/artifacts/ERC20_BASE.json";
 import SmartBasketABI from "../contracts/artifacts/SmartBasket.json";
+import {
+  PORTFOLIO_PLANS,
+  calculatePortfolioRiskLevel,
+  getRiskBorderClass,
+  getRiskColorClass,
+  getTokenRiskByAddress,
+} from "../utils/scaffold-eth/riskUtils";
 import { usePortfolioContext } from "./PortfolioContext";
 import { parseEther } from "ethers";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
@@ -10,32 +17,8 @@ const MAXUINT256 = 1157920892373161954235709850086879078532699846656405640394575
 
 const tokens = addresses.tokens;
 
-const predefinedPlans = [
-  {
-    name: "Low Risk",
-    allocations: [
-      { tokenAddress: tokens.WNEO, percentage: 60, amount: 0 },
-      { tokenAddress: tokens.WBTC, percentage: 20, amount: 0 },
-      { tokenAddress: tokens.XRP, percentage: 20, amount: 0 },
-    ],
-  },
-  {
-    name: "Medium Risk",
-    allocations: [
-      { tokenAddress: tokens.UNI, percentage: 50, amount: 0 },
-      { tokenAddress: tokens.LINK, percentage: 50, amount: 0 },
-    ],
-  },
-  {
-    name: "High Risk",
-    allocations: [
-      { tokenAddress: tokens.DOGE, percentage: 25, amount: 0 },
-      { tokenAddress: tokens.SHIB, percentage: 25, amount: 0 },
-      { tokenAddress: tokens.PEPE, percentage: 25, amount: 0 },
-      { tokenAddress: tokens.FLOKI, percentage: 25, amount: 0 },
-    ],
-  },
-];
+// Remove the existing predefinedPlans and use:
+const predefinedPlans = PORTFOLIO_PLANS;
 
 const tokenOptions = Object.entries(tokens).map(([name, address]) => ({ name, address }));
 
@@ -49,10 +32,10 @@ function CreatePortfolio() {
     Array<{ tokenAddress: string; percentage: number; amount: number }>
   >([]);
 
-  const basketAddress = addresses.core.SmartBasket as `0x${string}`;
+  const basketAddress = addresses.core.SmartPortfolio as `0x${string}`;
   const usdtAddress = addresses.tokens.USDT as `0x${string}`;
 
-  const { setRefreshBaskets, setRefreshTokenBalances } = usePortfolioContext();
+  const { setRefreshPortfolios, setRefreshTokenBalances } = usePortfolioContext();
 
   // Check allowance
   const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
@@ -141,10 +124,10 @@ function CreatePortfolio() {
 
   useEffect(() => {
     if (isCreateSuccess) {
-      setRefreshBaskets(true);
+      setRefreshPortfolios(true);
       setRefreshTokenBalances(true); // Trigger a refresh of token balances
     }
-  }, [isCreateSuccess, setRefreshBaskets, setRefreshTokenBalances]);
+  }, [isCreateSuccess, setRefreshPortfolios, setRefreshTokenBalances]);
 
   const isCustomPlanValid =
     customAllocations.length > 0 &&
@@ -160,7 +143,7 @@ function CreatePortfolio() {
 
   return (
     <div className="my-2 p-4 bg-base-200 rounded-lg">
-      <h3 className="text-xl font-bold mb-4">Create Basket</h3>
+      <h3 className="text-xl font-bold mb-4">Create Smart Portfolio</h3>
 
       {allowance === 0n ? (
         <div>
@@ -178,7 +161,9 @@ function CreatePortfolio() {
               </span>
             </label>
             <select
-              className="select select-bordered w-full"
+              className={`select select-bordered w-full ${
+                selectedPlan !== "custom" ? getRiskBorderClass(predefinedPlans[selectedPlan].name) : ""
+              }`}
               value={selectedPlan === "custom" ? "custom" : selectedPlan}
               onChange={handlePlanChange}
             >
@@ -192,14 +177,17 @@ function CreatePortfolio() {
           </div>
 
           {selectedPlan !== "custom" && (
-            <div className="bg-base-100 p-4 rounded-lg">
+            <div className={`p-4 rounded-lg ${getRiskColorClass(predefinedPlans[selectedPlan].name)}`}>
               <h4 className="font-bold mb-2">{predefinedPlans[selectedPlan].name} Plan Details:</h4>
+              <p className="text-sm mb-2">{predefinedPlans[selectedPlan].description}</p>
               <ul className="list-disc list-inside">
-                {predefinedPlans[selectedPlan].allocations.map((allocation, index) => (
-                  <li key={index}>
-                    {getTokenName(allocation.tokenAddress)}: {allocation.percentage}%
-                  </li>
-                ))}
+                {predefinedPlans[selectedPlan].allocations.map((allocation, index) => {
+                  return (
+                    <li key={index}>
+                      {allocation.symbol}: {allocation.percentage}%
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -207,7 +195,15 @@ function CreatePortfolio() {
           {selectedPlan === "custom" && (
             <div className="space-y-2">
               {customAllocations.map((allocation, index) => (
-                <div key={index} className="flex items-center space-x-2">
+                <div key={index} className={`flex items-center space-x-2`}>
+                  <div
+                    className={`border-full p-2 w-2 ${
+                      getTokenRiskByAddress(allocation.tokenAddress)
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        ? getRiskColorClass(getTokenRiskByAddress(allocation.tokenAddress)!.riskLevel)
+                        : ""
+                    }`}
+                  ></div>
                   <select
                     className="select select-bordered flex-grow"
                     value={allocation.tokenAddress}

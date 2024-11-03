@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from "react";
 import addresses from "../contracts/addresses.json";
 import SmartPortfolioABI from "../contracts/artifacts/SmartBasket.json";
-import { usePortfolioContext } from "./PortfolioContext";
-import { formatEther } from "ethers";
+import { type PortfolioDetails, usePortfolioContext } from "./PortfolioContext";
 import { useAccount, useReadContract, useReadContracts, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
-interface PortfolioDetails {
-  tokenAddresses: string[];
-  tokenPercentages: number[];
-  tokenAmounts: bigint[];
-  tokenValues: bigint[];
-  investmentValue: bigint;
-  totalValue: bigint;
-}
-
 const GetUserPortfolios: React.FC = () => {
-  const { refreshPortfolios, setRefreshPortfolios, setRefreshTokenBalances } = usePortfolioContext();
+  const {
+    refreshPortfolios,
+    setRefreshPortfolios,
+    setRefreshTokenBalances,
+    setPortfolioDetails,
+    portfolioDetails,
+    formatValue,
+    calculateROI,
+    getTokenName,
+  } = usePortfolioContext();
+
   const { address } = useAccount();
-  const [portfolioDetails, setPortfolioDetails] = useState<PortfolioDetails[]>([]);
   const [sellingPortfolioId, setSellingPortfolioId] = useState<number | null>(null);
 
   const {
@@ -109,30 +108,11 @@ const GetUserPortfolios: React.FC = () => {
       });
       setPortfolioDetails(details);
     }
-  }, [portfolioCount, assetDetailsResults.data, totalValueResults.data, userPortfolios]);
+  }, [portfolioCount, assetDetailsResults.data, totalValueResults.data, userPortfolios, setPortfolioDetails]);
 
   if (isLoading || assetDetailsResults.isLoading || totalValueResults.isLoading) return <div>Loading...</div>;
   if (isError || assetDetailsResults.isError || totalValueResults.isError)
     return <div>Create some portfolios to see the details here.</div>;
-
-  const formatValue = (value: bigint) => {
-    const formatted = parseFloat(formatEther(value)).toFixed(2);
-    return formatted === "-0.00" ? "0.00" : formatted;
-  };
-
-  const calculateROI = (current: bigint, initial: bigint) => {
-    const currentValue = Number(formatValue(current));
-    const initialValue = Number(formatValue(initial));
-    const roi = ((currentValue - initialValue) / initialValue) * 100;
-    return roi.toFixed(2);
-  };
-
-  const tokenOptions = Object.entries(addresses.tokens).map(([name, address]) => ({ name, address }));
-
-  const getTokenName = (address: string) => {
-    const token = tokenOptions.find(t => t.address === address);
-    return token ? token.name : "Unknown";
-  };
 
   return (
     <div className="overflow-x-auto">
@@ -181,7 +161,13 @@ const GetUserPortfolios: React.FC = () => {
               <td>{formatValue(portfolio.investmentValue)} USDT</td>
               <td>{formatValue(portfolio.totalValue)} USDT</td>
               <td>
-                <span className={Number(calculateROI(portfolio.totalValue, portfolio.investmentValue)) >= 0 ? "text-green-500" : "text-red-500"}>
+                <span
+                  className={
+                    Number(calculateROI(portfolio.totalValue, portfolio.investmentValue)) >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }
+                >
                   {calculateROI(portfolio.totalValue, portfolio.investmentValue)}%
                 </span>
               </td>

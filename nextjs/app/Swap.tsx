@@ -78,10 +78,10 @@ const Swap: React.FC = () => {
   const allowanceStr = bigIntToString(allowance);
   const estimatedAmountOutStr = bigIntToString(estimatedAmountOut);
 
-  console.log("fromTokenBalance:", fromTokenBalanceStr);
-  console.log("toTokenBalance:", toTokenBalanceStr);
-  console.log("allowance:", allowanceStr);
-  console.log("estimatedAmountOut:", estimatedAmountOutStr);
+  // console.log("fromTokenBalance:", fromTokenBalanceStr);
+  // console.log("toTokenBalance:", toTokenBalanceStr);
+  // console.log("allowance:", allowanceStr);
+  // console.log("estimatedAmountOut:", estimatedAmountOutStr);
 
   const formatBalance = (balance: bigint | undefined) => {
     if (balance === undefined) return "Loading...";

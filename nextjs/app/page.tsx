@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { RiskChart } from "../components/ui/RiskChart";
 import addresses from "../contracts/addresses.json";
 import SmartPortfolioABI from "../contracts/artifacts/SmartBasket.json";
 import CreatePortfolio from "./CreatePortfolio";
@@ -9,7 +10,6 @@ import Faucet from "./Faucet";
 import GetTokenBalance from "./GetTokenBalance";
 import GetUserBaskets from "./GetUserBaskets";
 import { PortfolioProvider } from "./PortfolioContext";
-
 import Swap from "./Swap";
 import { formatEther } from "ethers";
 import { useAccount, useReadContract } from "wagmi";
@@ -21,10 +21,12 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
+import { usePortfolioContext } from './PortfolioContext';
+
 
 const Home: React.FC = () => {
   const { address: connectedAddress } = useAccount();
-  const contractAddress = addresses.core.SmartBasket;
+  const contractAddress = addresses.core.SmartPortfolio;
   const [totalUsdtInvested, setTotalUsdtInvested] = useState("0.00");
   const [isContractsVisible, setIsContractsVisible] = useState(false);
   const [isAllTokensVisible, setIsAllTokensVisible] = useState(false);
@@ -38,6 +40,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (Array.isArray(basketsData)) {
+      console.table(JSON.stringify(basketsData));
       const total = basketsData.reduce((sum, basket) => sum + BigInt(basket.investmentValue), BigInt(0));
       setTotalUsdtInvested(formatEther(total));
     }
@@ -45,12 +48,15 @@ const Home: React.FC = () => {
 
   const tokenEntries = Object.entries(addresses.tokens);
 
+
   return (
     <PortfolioProvider>
       <div className="flex flex-col min-h-screen">
         <div className="pt-8 text-center">
           <div className="container mx-auto px-4 glow">
-            <h1 className="text-4xl font-extrabold mb-4">SmartPortfolio: Customizable Token Portfolio Manager on Neo X</h1>
+            <h1 className="text-4xl font-extrabold mb-4">
+              SmartPortfolio: Customizable Token Portfolio Manager on Neo X
+            </h1>
             <p className="text-xl text-base-content opacity-80 max-w-2xl mx-auto mb-8">
               Hackathon Submission for Neo X Code Grinder Challenge
             </p>
@@ -131,6 +137,9 @@ const Home: React.FC = () => {
                           <span className="text-2xl font-bold">${totalUsdtInvested}</span>
                           <span className="ml-2 text-sm opacity-70">USDT</span>
                         </div>
+                      </div>
+                      <div className="w-full">
+                        <RiskChart />
                       </div>
                       <div>
                         <Faucet />
